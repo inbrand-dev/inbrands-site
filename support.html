@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Support | InBrands</title>
+  <style>
+    :root {
+      --bg: #f5f5f4;
+      --text: #1f2937;
+      --muted: #4b5563;
+      --dark: #111827;
+      --card: #ffffff;
+      --border: #e5e7eb;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    header {
+      background: var(--dark);
+      color: white;
+      padding: 48px 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 38px;
+    }
+
+    header p {
+      margin: 0;
+      font-size: 17px;
+      color: #d1d5db;
+    }
+
+    nav {
+      background: #1f2937;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 0 12px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .card {
+      background: var(--card);
+      padding: 28px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      margin-bottom: 24px;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 26px;
+    }
+
+    ul {
+      padding-left: 22px;
+    }
+
+    a {
+      color: #111827;
+      font-weight: 700;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    footer {
+      text-align: center;
+      color: #6b7280;
+      padding: 32px 20px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 30px;
+      }
+
+      nav a {
+        display: inline-block;
+        margin: 6px 8px;
+      }
+
+      main {
+        margin: 24px auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Support</h1>
+    <p>Help and contact information for InBrands apps.</p>
+  </header>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="intrack.html">InTrack</a>
+    <a href="intrack-privacy-policy.html">Privacy</a>
+    <a href="support.html">Support</a>
+    <a href="donate.html">Donate</a>
+    <a href="changelog.html">Changelog</a>
+  </nav>
+
+  <main>
+    <section class="card">
+      <h2>Contact</h2>
+      <p>
+        For support, bug reports, feature feedback, or privacy-related questions about InTrack, contact:
+      </p>
+      <p>
+        <a href="mailto:inbrand.dev@gmail.com">inbrand.dev@gmail.com</a>
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>When reporting a bug</h2>
+      <p class="muted">
+        To make bug reports easier to investigate, include as much of the following as possible:
+      </p>
+      <ul>
+        <li>App name: InTrack</li>
+        <li>What you were trying to do</li>
+        <li>What happened instead</li>
+        <li>Your Android version</li>
+        <li>Your phone or tablet model</li>
+        <li>Whether the issue happens every time or only sometimes</li>
+        <li>Screenshots, if useful and safe to share</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Privacy requests</h2>
+      <p>
+        InTrack stores user data locally on the device. It does not use accounts, cloud sync,
+        analytics, ads, or third-party tracking SDKs.
+      </p>
+      <p>
+        Because InTrack does not transmit user tracking data to InBrands, most user data can be
+        deleted directly by deleting data inside the app, clearing app storage in Android settings,
+        or uninstalling the app.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    &copy; 2026 InBrands. All rights reserved.
+  </footer>
+</body>
+</html>
