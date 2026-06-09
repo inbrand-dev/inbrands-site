@@ -78,12 +78,33 @@
       font-size: 26px;
     }
 
+    h3 {
+      margin-bottom: 6px;
+      font-size: 20px;
+    }
+
     ul {
       padding-left: 22px;
     }
 
     .muted {
       color: var(--muted);
+    }
+
+    .button {
+      display: inline-block;
+      background: var(--dark);
+      color: white;
+      padding: 12px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      margin-top: 12px;
+      margin-right: 8px;
+    }
+
+    .button:hover {
+      background: #374151;
     }
 
     footer {
@@ -117,7 +138,7 @@
 
   <nav>
     <a href="index.html">Home</a>
-    <a href="intrack.html">InTrack</a>
+    <a href="intrack-android-habit-tracker.html">InTrack</a>
     <a href="intrack-privacy-policy.html">Privacy</a>
     <a href="support.html">Support</a>
     <a href="donate.html">Donate</a>
@@ -127,17 +148,74 @@
   <main>
     <section class="card">
       <h2>InTrack</h2>
+      <p>
+        InTrack is a private offline habit tracker for Android built around real-life routines,
+        flexible schedules, custom day boundaries, groups, widgets, reminders, stats, and no-account tracking.
+      </p>
       <p class="muted">
-        Public changelog entries will be added here as InTrack moves toward release.
+        InTrack is available on Google Play and is actively maintained.
+      </p>
+      <a class="button" href="https://play.google.com/store/apps/details?id=com.inbrands.intrack">Download on Google Play</a>
+      <a class="button" href="intrack-android-habit-tracker.html">View InTrack</a>
+    </section>
+
+    <section class="card">
+      <h2>Current release</h2>
+      <h3>Version 1.6.2</h3>
+      <ul>
+        <li>Fixed interval scheduling behavior across daylight saving time changes.</li>
+        <li>Fixed Today card period totals for weekly and interval-based trackers.</li>
+        <li>Improved schedule reliability for real-world routines and off-hour use cases.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Recent releases</h2>
+      <h3>Version 1.6.1</h3>
+      <ul>
+        <li>Added competition tracking.</li>
+        <li>Added optional Daily Occurrences graphs.</li>
+        <li>Improved duration timer logging behavior.</li>
+        <li>Improved save-as-.txt exports.</li>
+        <li>Improved chart labels and whole-number scaling.</li>
+        <li>Improved widget previews, setup, labels, and empty-state guidance.</li>
+        <li>Improved shared tracker imports.</li>
+        <li>Fixed Yes/No tracker behavior.</li>
+        <li>Fixed end-of-day skip handling.</li>
+        <li>Added extra reminder times as a Plus feature.</li>
+      </ul>
+
+      <h3>Version 1.5.0</h3>
+      <ul>
+        <li>Added Groups for organizing related trackers into routines or categories.</li>
+        <li>Added collection-style group statistics.</li>
+        <li>Improved group sharing, import, and export behavior.</li>
+        <li>Improved backup handling around skip history and group membership.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Development focus</h2>
+      <p>
+        InTrack is continuing to improve around flexible scheduling, local-first privacy,
+        widgets, groups, statistics, and tracker types that fit real routines instead of forcing
+        every habit into the same daily checkbox.
+      </p>
+      <p class="muted">
+        Planned and in-progress work may change as features are tested and refined.
       </p>
     </section>
 
     <section class="card">
-      <h2>Pre-release</h2>
+      <h2>Earlier foundation</h2>
       <ul>
-        <li>Initial InTrack development in progress</li>
-        <li>Core tracker creation, logging, statistics, calendar, import/export, reminders, and local settings under development</li>
-        <li>Google Play publishing materials being prepared</li>
+        <li>Core tracker creation and logging.</li>
+        <li>Calendar history and summary views.</li>
+        <li>Streaks, completion rates, and progress statistics.</li>
+        <li>Local reminders using Android notifications.</li>
+        <li>Local-first data storage.</li>
+        <li>Export and import backup support.</li>
+        <li>Optional local PIN lock protection.</li>
       </ul>
     </section>
   </main>
