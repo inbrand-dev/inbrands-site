@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InTrack Android Habit Tracker — Private, Offline, Flexible</title>
+  <meta name="description" content="InTrack is a private offline habit tracker for Android built for real-life routines, custom day boundaries, flexible schedules, widgets, groups, reminders, stats, and no-account tracking." />
+  <meta property="og:title" content="InTrack Android Habit Tracker" />
+  <meta property="og:description" content="Private offline habit tracking for your real day — not just the calendar day." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://inbrands.app/intrack-android-habit-tracker.html" />
+  <style>
+    :root {
+      --bg: #f5f5f4;
+      --text: #1f2937;
+      --muted: #4b5563;
+      --dark: #111827;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --accent: #6d4dbf;
+      --accent-dark: #563a9c;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    header {
+      background: linear-gradient(135deg, #111827 0%, #2f235f 100%);
+      color: white;
+      padding: 56px 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0 0 12px;
+      font-size: 44px;
+      line-height: 1.1;
+    }
+
+    header p {
+      max-width: 760px;
+      margin: 0 auto;
+      font-size: 19px;
+      color: #e5e7eb;
+    }
+
+    nav {
+      background: #1f2937;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 0 12px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    main {
+      max-width: 980px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .card {
+      background: var(--card);
+      padding: 30px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      margin-bottom: 24px;
+    }
+
+    .hero-card {
+      border-top: 5px solid var(--accent);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 28px;
+      line-height: 1.2;
+    }
+
+    .card h3 {
+      margin-bottom: 6px;
+      font-size: 20px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .button {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 12px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      margin-top: 12px;
+      margin-right: 8px;
+    }
+
+    .button:hover {
+      background: var(--accent-dark);
+    }
+
+    .button.secondary {
+      background: var(--dark);
+    }
+
+    .button.secondary:hover {
+      background: #374151;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .mini-card {
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    ul {
+      padding-left: 22px;
+    }
+
+    .feature-list {
+      columns: 2;
+      column-gap: 40px;
+    }
+
+    .faq h3 {
+      margin-top: 22px;
+    }
+
+    footer {
+      text-align: center;
+      color: #6b7280;
+      padding: 32px 20px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 700px) {
+      header h1 {
+        font-size: 34px;
+      }
+
+      header p {
+        font-size: 17px;
+      }
+
+      nav a {
+        display: inline-block;
+        margin: 6px 8px;
+      }
+
+      main {
+        margin: 24px auto;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-list {
+        columns: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Track your real day, not just the calendar day.</h1>
+    <p>
+      InTrack is a private offline habit tracker for Android built for real-life routines,
+      custom day boundaries, flexible schedules, groups, widgets, reminders, stats, and
+      no-account tracking.
+    </p>
+  </header>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="intrack-android-habit-tracker.html">InTrack</a>
+    <a href="intrack-privacy-policy.html">Privacy</a>
+    <a href="support.html">Support</a>
+    <a href="donate.html">Donate</a>
+    <a href="changelog.html">Changelog</a>
+  </nav>
+
+  <main>
+    <section class="card hero-card">
+      <h2>Private offline habit tracking for your real day.</h2>
+      <p>
+        Most habit trackers assume your day ends at midnight. InTrack is built around your
+        real day — whether that means normal routines, night shifts, off-hour schedules,
+        family life, or habits that do not fit neatly into a calendar.
+      </p>
+      <p>
+        Track habits, routines, reminders, streaks, groups, widgets, and progress privately
+        on your device. No account. No ads. No analytics.
+      </p>
+      <a class="button" href="https://play.google.com/store/apps/details?id=com.inbrands.intrack">Download on Google Play</a>
+      <a class="button secondary" href="intrack-privacy-policy.html">Read the Privacy Policy</a>
+    </section>
+
+    <section class="card">
+      <h2>What makes InTrack different?</h2>
+      <p>
+        InTrack is built around flexible habit tracking instead of forcing every habit into
+        the same daily checkbox. You can track simple daily habits, routines, limits,
+        streaks, reminders, groups, and progress without needing an account or cloud-based system.
+      </p>
+      <p class="muted">
+        Core tracking works offline, and your habit data stays local on your device.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Built for your real routine</h2>
+      <p>
+        InTrack helps when your habits do not fit cleanly into a normal calendar day.
+        Whether your day ends at midnight, 3 AM, 5 AM, or somewhere else, InTrack is designed
+        to make habit tracking fit your routine instead of forcing your routine to fit the app.
+      </p>
+      <div class="grid">
+        <div class="mini-card">
+          <h3>Off-hour schedules</h3>
+          <p class="muted">Useful for night shifts, rotating routines, and habits that cross calendar days.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Normal routines</h3>
+          <p class="muted">Works for regular daily habits, chores, fitness, reading, and personal goals.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Privacy-first tracking</h3>
+          <p class="muted">No account, no ads, no analytics, and core tracking works offline.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Flexible systems</h3>
+          <p class="muted">Use groups, reminders, widgets, stats, and exports to match how you actually track.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Private by default</h2>
+      <p>
+        InTrack is designed for people who do not want another account, feed, ad system,
+        or analytics tracker attached to their personal habits.
+      </p>
+      <ul>
+        <li>No account required</li>
+        <li>No ads</li>
+        <li>No analytics</li>
+        <li>Core tracking works offline</li>
+        <li>Habit data stays local on your device</li>
+        <li>Export and sharing options are user-controlled</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Flexible tracker types</h2>
+      <p>
+        Not every habit is a simple yes-or-no checkbox. InTrack supports multiple ways to
+        track progress so you can record what actually matters.
+      </p>
+      <ul class="feature-list">
+        <li>Checkmarks</li>
+        <li>Yes/No tracking</li>
+        <li>Counts and amounts</li>
+        <li>Duration tracking</li>
+        <li>Occurrences</li>
+        <li>Limits</li>
+        <li>Ranges</li>
+        <li>Personal bests</li>
+        <li>Streaks</li>
+        <li>Progress over time</li>
+      </ul>
+      <p class="muted">
+        Use it for habits like drinking water, limiting caffeine, reading, working out,
+        calling family, avoiding overspending, or practicing for a set amount of time.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Groups, widgets, reminders, stats, and exports</h2>
+      <p>
+        Some habits make more sense together. InTrack lets you group related habits into
+        routines so you can organize your life by category, schedule, or purpose.
+      </p>
+      <ul class="feature-list">
+        <li>Home screen widgets</li>
+        <li>Local reminders</li>
+        <li>Streak tracking</li>
+        <li>Progress stats</li>
+        <li>Summary views</li>
+        <li>Group tracking</li>
+        <li>Export and share options</li>
+        <li>JSON backup support</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Who is InTrack for?</h2>
+      <p>
+        InTrack is for people who want flexible habit tracking without giving up privacy.
+        You do not need a strange schedule to use it. The app works for normal routines too.
+        It is simply built to handle real life when things are not perfectly clean or predictable.
+      </p>
+      <ul class="feature-list">
+        <li>Normal daily routine builders</li>
+        <li>Night-shift workers</li>
+        <li>People with off-hour schedules</li>
+        <li>Parents and busy workers</li>
+        <li>Privacy-first users</li>
+        <li>People tired of rigid streak apps</li>
+      </ul>
+    </section>
+
+    <section class="card faq">
+      <h2>Frequently asked questions</h2>
+
+      <h3>Can I use InTrack without an account?</h3>
+      <p>Yes. InTrack does not require an account for core habit tracking.</p>
+
+      <h3>Does InTrack work offline?</h3>
+      <p>Yes. Core tracking works offline.</p>
+
+      <h3>Where is my habit data stored?</h3>
+      <p>Your habit data stays local on your device unless you choose to export or share it.</p>
+
+      <h3>Does InTrack have ads?</h3>
+      <p>No. InTrack does not have ads.</p>
+
+      <h3>Does InTrack use analytics?</h3>
+      <p>No. InTrack does not use analytics.</p>
+
+      <h3>Can I track habits if my day does not end at midnight?</h3>
+      <p>Yes. InTrack is built for real-life routines and supports custom day boundaries.</p>
+
+      <h3>Is InTrack good for night-shift workers?</h3>
+      <p>
+        Yes. Night shift is one of the clearest use cases because many habit trackers treat
+        midnight as the hard reset point. InTrack is built to work better for people whose
+        real day crosses calendar days.
+      </p>
+
+      <h3>Can normal daily-routine users use InTrack?</h3>
+      <p>
+        Yes. InTrack works for normal daily habits too. The flexible schedule support is there
+        when you need it, but it does not get in the way of regular tracking.
+      </p>
+
+      <h3>Does InTrack have widgets?</h3>
+      <p>Yes. InTrack supports widgets for quicker access from your home screen.</p>
+
+      <h3>Can I export my data?</h3>
+      <p>Yes. InTrack includes export and share options so you can keep control of your tracking data.</p>
+    </section>
+
+    <section class="card hero-card">
+      <h2>Download InTrack</h2>
+      <p>
+        Build habits around your real day — not just the calendar day.
+      </p>
+      <a class="button" href="https://play.google.com/store/apps/details?id=com.inbrands.intrack">Download InTrack on Google Play</a>
+    </section>
+  </main>
+
+  <footer>
+    &copy; 2026 InBrands. All rights reserved.
+  </footer>
+</body>
+</html>
