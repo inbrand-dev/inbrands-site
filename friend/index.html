@@ -78,11 +78,11 @@
     <div class="toprow">
       <div>
         <h2 class="section-title" id="people-heading">People</h2>
-        <p class="muted">John and Anthony are loaded. Select either or both to compare their availability.</p>
+        <p class="muted">John and Anthony are loaded. Sundays begin at noon after church, provided each person is off work.</p>
       </div>
     </div>
     <div class="person-row" id="people"></div>
-    <div class="tag">John: repeating 28-day rotation. Anthony: Friday from 11 AM, Saturday and Sunday all day.</div>
+    <div class="tag">John: repeating 28-day rotation. Anthony: Friday from 11 AM, Saturday all day. Both: available Sunday from noon when off work.</div>
   </section>
   <section class="panel" aria-label="Monthly calendar">
     <div class="calhead">
@@ -105,7 +105,7 @@
     <ol id="upcoming" aria-live="polite"></ol>
     <button type="button" id="more">Show 12 more</button>
   </section>
-  <footer>Predefined schedules only; no account required. Anyone with this link can view the calendar. Partial Friday availability is included when Anthony is selected.</footer>
+  <footer>Predefined schedules only; no account required. Anyone with this link can view the calendar. Friday-from-11-AM and Sunday-from-noon availability are included as applicable.</footer>
 </main>
 <script>
   'use strict';
@@ -120,14 +120,19 @@
   const people = [
     {
       id: 'john', name: 'John',
-      available: n => johnDaysOff.has(positiveMod(n - anchorDay, 28)) ? { start: 0, end: 1440 } : null
+      available: n => {
+        if (!johnDaysOff.has(positiveMod(n - anchorDay, 28))) return null;
+        const weekday = new Date(n * MS_DAY).getUTCDay();
+        return { start: weekday === 0 ? 12 * 60 : 0, end: 1440 }; // Church Sunday until noon.
+      }
     },
     {
       id: 'anthony', name: 'Anthony',
       available: n => {
         const weekday = new Date(n * MS_DAY).getUTCDay();
         if (weekday === 5) return { start: 11 * 60, end: 1440 }; // Fridays from 11 AM.
-        if (weekday === 6 || weekday === 0) return { start: 0, end: 1440 }; // Weekends.
+        if (weekday === 6) return { start: 0, end: 1440 }; // Saturdays all day.
+        if (weekday === 0) return { start: 12 * 60, end: 1440 }; // Sundays after church.
         return null; // Working Monday through Thursday.
       }
     }
