@@ -24,12 +24,12 @@
       --chip-border: #d3e2e5;
       --control: #f4f7f8;
       --control-hover: #e8f1f2;
-      --full-bg: #d8f3e9;
-      --full-border: #8acdb8;
-      --full-ink: #075d4a;
-      --partial-bg: #fff0d1;
-      --partial-border: #dfb96a;
-      --partial-ink: #795006;
+      --full-bg: #b5e7d3;
+      --full-border: #51ac8b;
+      --full-ink: #064d3b;
+      --partial-bg: #f4d58a;
+      --partial-border: #ca9a38;
+      --partial-ink: #604202;
       --today-border: #4d71ba;
       --list-bg: #f8fbfb;
       --list-border: #dfebed;
@@ -116,12 +116,15 @@
     .day.match { background: var(--full-bg); border-color: var(--full-border); }
     .day.match.partial { background: var(--partial-bg); border-color: var(--partial-border); }
     .day.today { outline: 2px solid var(--today-border); outline-offset: -2px; }
-    .number { color: var(--ink); font-size: .99rem; font-weight: 740; line-height: 1.2; }
+    .day-head { width: 100%; display: flex; align-items: flex-start; justify-content: space-between; gap: 2px; min-width: 0; }
+    .number { color: var(--ink); font-size: .99rem; font-weight: 740; line-height: 1.2; flex: 0 0 auto; }
     .day.match .number, .day.match .flag { color: var(--full-ink); }
     .day.match.partial .number, .day.match.partial .flag { color: var(--partial-ink); }
-    .person-markers { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; margin-top: auto; }
-    .person-dot { display: block; width: 9px; height: 9px; flex: 0 0 9px; border-radius: 50%; background: var(--person-color); box-shadow: 0 0 0 1px var(--card); }
-    .flag { color: var(--quiet); font-size: .7rem; font-weight: 800; line-height: 1.25; letter-spacing: .01em; }
+    .person-markers { display: flex; align-items: center; justify-content: flex-end; flex: 0 1 auto; min-width: 0; padding: 1px 0 0 2px; }
+    .person-dot { display: block; width: 11px; height: 11px; flex: 0 0 11px; border: 1.5px solid var(--card); border-radius: 50%; background: var(--person-color); }
+    .person-dot + .person-dot { margin-left: -4px; }
+    .marker-overflow { color: var(--ink); font-size: .6rem; font-weight: 800; line-height: 1; margin-left: 2px; white-space: nowrap; }
+    .flag { color: var(--quiet); font-size: .7rem; font-weight: 800; line-height: 1.25; letter-spacing: .01em; margin-top: auto; }
     .legend { display: flex; align-items: center; gap: 12px 21px; flex-wrap: wrap; color: var(--muted); font-size: .82rem; margin-top: 18px; }
     .legend > span { white-space: nowrap; }
     .swatch { width: 14px; height: 14px; display: inline-block; border-radius: 4px; background: var(--full-bg); border: 1px solid var(--full-border); vertical-align: -2px; margin-right: 6px; }
@@ -153,8 +156,9 @@
       .panel { padding: 18px 16px; border-radius: 16px; margin: 12px 0; }
       .day { min-height: 65px; padding: 7px 5px; gap: 6px; border-radius: 8px; }
       .flag { font-size: .62rem; letter-spacing: 0; }
-      .person-markers { gap: 3px; }
-      .person-dot { width: 7px; height: 7px; flex-basis: 7px; }
+      .person-dot { width: 8px; height: 8px; flex-basis: 8px; border-width: 1px; }
+      .person-dot + .person-dot { margin-left: -3px; }
+      .marker-overflow { font-size: .51rem; margin-left: 1px; }
       .weekdays, .grid { gap: 4px; }
       .weekdays div { font-size: .7rem; padding: 6px 0; }
       #upcoming { grid-template-columns: 1fr; }
@@ -168,6 +172,10 @@
       .weekdays, .grid { gap: 3px; }
       .day { min-height: 59px; padding: 6px 4px; gap: 4px; }
       .flag { font-size: .56rem; }
+      .number { font-size: .88rem; }
+      .person-dot { width: 6px; height: 6px; flex-basis: 6px; }
+      .person-dot + .person-dot { margin-left: -2px; }
+      .marker-overflow { font-size: .45rem; margin-left: 0; }
       .nav { gap: 5px; }
     }
     @media (prefers-reduced-motion: reduce) {
@@ -356,26 +364,36 @@
         if (n === todayN) cell.setAttribute('aria-current', 'date');
         const individualStatus = availablePeople.map(p => p.name + ': ' + availabilityLabel(p.available(n))).join('; ');
         cell.setAttribute('aria-label', `${dateFmt.format(new Date(n * MS_DAY))}: ${window ? 'shared availability ' + availabilityLabel(window) : 'no shared availability'}${individualStatus ? '; ' + individualStatus : ''}${n === todayN ? ', today' : ''}`);
+        const dayHead = document.createElement('span');
+        dayHead.className = 'day-head';
         const num = document.createElement('span');
         num.className = 'number';
         num.textContent = String(day);
-        cell.append(num);
+        dayHead.append(num);
+        if (availablePeople.length) {
+          const markers = document.createElement('span');
+          markers.className = 'person-markers';
+          markers.setAttribute('aria-hidden', 'true');
+          // Three overlapping markers, then +N for any additional available people.
+          for (const person of availablePeople.slice(0, 3)) {
+            const dot = document.createElement('span');
+            dot.className = 'person-dot person-' + person.id;
+            markers.append(dot);
+          }
+          if (availablePeople.length > 3) {
+            const overflow = document.createElement('span');
+            overflow.className = 'marker-overflow';
+            overflow.textContent = '+' + (availablePeople.length - 3);
+            markers.append(overflow);
+          }
+          dayHead.append(markers);
+        }
+        cell.append(dayHead);
         if (window) {
           const flag = document.createElement('span');
           flag.className = 'flag';
           flag.textContent = isFullDay(window) ? 'ALL DAY' : timeLabel(window.start) + '+';
           cell.append(flag);
-        }
-        if (availablePeople.length) {
-          const markers = document.createElement('span');
-          markers.className = 'person-markers';
-          markers.setAttribute('aria-hidden', 'true');
-          for (const person of availablePeople) {
-            const dot = document.createElement('span');
-            dot.className = 'person-dot person-' + person.id;
-            markers.append(dot);
-          }
-          cell.append(markers);
         }
         cell.addEventListener('click', () => {
           selectedDayN = n;
