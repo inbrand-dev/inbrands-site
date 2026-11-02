@@ -343,6 +343,8 @@
           selectedDayN = n;
           renderCalendar();
           renderDetails();
+          const focusedDay = document.querySelector('.day.chosen');
+          if (focusedDay) focusedDay.focus({ preventScroll: true });
         });
       }
       grid.append(cell);
@@ -384,6 +386,7 @@
     renderDetails();
     const selectedCell = document.querySelector('.day.chosen');
     if (selectedCell) {
+      selectedCell.focus({ preventScroll: true });
       const reducedMotion = typeof window.matchMedia === 'function' &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       selectedCell.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'center' });
