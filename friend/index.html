@@ -82,7 +82,7 @@
     .person[aria-pressed="true"] { color: var(--accent-text); background: var(--accent); border-color: var(--accent); }
     .person:hover { transform: translateY(-1px); }
     .person:not([aria-pressed="true"]):hover { background: var(--control-hover); }
-    .person:focus-visible, .nav button:focus-visible, #more:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+    .person:focus-visible, .nav button:focus-visible, .day:focus-visible, .upcoming-date:focus-visible, #more:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
     .tag { display: block; width: fit-content; max-width: 100%; padding: 10px 12px; border-radius: 10px; color: var(--muted); background: var(--control); font-size: .81rem; line-height: 1.55; }
     .calhead { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
     #month-title { margin: 0; font-size: clamp(1.3rem, 3vw, 1.62rem); font-weight: 750; letter-spacing: -.025em; }
@@ -93,7 +93,10 @@
     .weekdays, .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
     .weekdays { margin-bottom: 7px; }
     .weekdays div { text-align: center; color: var(--quiet); font-size: .76rem; font-weight: 750; padding: 9px 0; }
-    .day { min-width: 0; min-height: 80px; padding: 10px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; background: var(--control); border: 1px solid var(--border); border-radius: 11px; }
+    .day { min-width: 0; width: 100%; min-height: 80px; padding: 10px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; background: var(--control); border: 1px solid var(--border); border-radius: 11px; font: inherit; color: var(--ink); text-align: left; cursor: pointer; }
+    .day:not(.blank):hover { border-color: var(--accent); }
+    .day.chosen { box-shadow: inset 0 0 0 2px var(--accent); }
+    .day.blank { cursor: default; }
     .day.blank { background: transparent; border-color: transparent; }
     .day.match { background: var(--full-bg); border-color: var(--full-border); }
     .day.match.partial { background: var(--partial-bg); border-color: var(--partial-border); }
@@ -107,9 +110,18 @@
     .swatch { width: 14px; height: 14px; display: inline-block; border-radius: 4px; background: var(--full-bg); border: 1px solid var(--full-border); vertical-align: -2px; margin-right: 6px; }
     .swatch.partial-swatch { background: var(--partial-bg); border-color: var(--partial-border); }
     .today-swatch { width: 14px; height: 14px; display: inline-block; border-radius: 4px; border: 2px solid var(--today-border); vertical-align: -2px; margin-right: 6px; }
+    .detail-panel { margin-top: 20px; padding: 16px 18px; border-radius: 13px; border: 1px solid var(--border); background: var(--control); }
+    .detail-panel[hidden] { display: none; }
+    .detail-panel h3 { font-size: 1rem; letter-spacing: -.01em; margin: 0 0 5px; }
+    .detail-panel p { font-size: .88rem; margin: 0 0 10px; color: var(--muted); }
+    .detail-panel ul { display: grid; gap: 6px; list-style: none; margin: 0; padding: 0; }
+    .detail-panel li { font-size: .89rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 5px 12px; }
+    .detail-panel li span:last-child { font-weight: 750; }
     .nexthead { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 10px; }
     #upcoming { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; list-style: none; margin: 17px 0 0; padding: 0; }
-    #upcoming li { background: var(--list-bg); border: 1px solid var(--list-border); padding: 13px 15px; border-radius: 11px; font-size: .91rem; line-height: 1.55; }
+    #upcoming li { background: var(--list-bg); border: 1px solid var(--list-border); border-radius: 11px; font-size: .91rem; line-height: 1.55; }
+    .upcoming-date { display: block; text-align: left; width: 100%; border: 0; border-radius: 11px; padding: 13px 15px; font: inherit; color: var(--ink); background: transparent; cursor: pointer; }
+    .upcoming-date:hover { background: var(--control-hover); }
     #upcoming li strong { display: inline-block; color: var(--accent); font-size: .82rem; font-weight: 800; min-width: 25px; margin-right: 6px; }
     #upcoming li.empty { grid-column: 1 / -1; color: var(--muted); }
     #more { margin-top: 18px; min-height: 44px; padding: 10px 18px; border-radius: 10px; border: 1px solid var(--chip-border); background: var(--chip); color: var(--chip-text); font: inherit; font-size: .9rem; font-weight: 730; cursor: pointer; }
@@ -160,7 +172,7 @@
     <div class="person-row" id="people"></div>
     <div class="tag">John: repeating 28-day rotation. Anthony: Friday from 11 AM, Saturday all day. Both: available Sunday from noon when off work.</div>
   </section>
-  <section class="panel" aria-label="Monthly calendar">
+  <section class="panel" id="calendar-panel" aria-label="Monthly calendar">
     <div class="calhead">
       <h2 id="month-title" aria-live="polite"></h2>
       <div class="nav">
@@ -170,18 +182,23 @@
       </div>
     </div>
     <div class="weekdays" aria-hidden="true"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
-    <div id="grid" class="grid" role="grid" aria-label="Days off by date"></div>
+    <div id="grid" class="grid" role="group" aria-label="Days off by date"></div>
     <div class="legend"><span><span class="swatch"></span>Available all day</span><span><span class="swatch partial-swatch"></span>Available from a specific time</span><span><span class="today-swatch"></span>Today</span></div>
+    <section id="day-details" class="detail-panel" aria-live="polite" hidden>
+      <h3 id="detail-title"></h3>
+      <p id="detail-summary"></p>
+      <ul id="detail-people"></ul>
+    </section>
   </section>
   <section class="panel" aria-labelledby="upcoming-title">
     <div class="nexthead">
       <h2 id="upcoming-title" class="section-title">Upcoming shared availability</h2>
-      <p class="muted">Earliest first · starting today</p>
+      <p class="muted">Tap a date to jump to it · earliest first</p>
     </div>
     <ol id="upcoming" aria-live="polite"></ol>
     <button type="button" id="more">Show 12 more</button>
   </section>
-  <footer>Predefined schedules only; no account required. Anyone with this link can view the calendar. Friday-from-11-AM and Sunday-from-noon availability are included as applicable.</footer>
+  <footer>Schedules are predefined; selected friends are remembered on this device. No account required. Anyone with this link can view the calendar.</footer>
 </main>
 <script>
   'use strict';
@@ -213,7 +230,26 @@
       }
     }
   ];
-  const selected = new Set(['john', 'anthony']);
+  const selectionKey = 'friends-days-off:selected:v1';
+  function loadSelected() {
+    const defaults = new Set(people.map(p => p.id));
+    try {
+      const raw = localStorage.getItem(selectionKey);
+      if (raw === null) return defaults;
+      const ids = JSON.parse(raw);
+      if (!Array.isArray(ids)) return defaults;
+      const allowed = new Set(people.map(p => p.id));
+      return new Set(ids.filter(id => typeof id === 'string' && allowed.has(id)));
+    } catch (_) {
+      return defaults; // Blocked storage must not break the calendar.
+    }
+  }
+  function saveSelected() {
+    try { localStorage.setItem(selectionKey, JSON.stringify([...selected])); }
+    catch (_) { /* Browsers may disable storage; the calendar still works. */ }
+  }
+  const selected = loadSelected();
+  let selectedDayN = null;
   const localNow = new Date();
   const todayN = dateNumber(localNow.getFullYear(), localNow.getMonth(), localNow.getDate());
   let viewedYear = localNow.getFullYear();
@@ -260,6 +296,7 @@
       b.setAttribute('aria-pressed', selected.has(person.id) ? 'true' : 'false');
       b.addEventListener('click', () => {
         selected.has(person.id) ? selected.delete(person.id) : selected.add(person.id);
+        saveSelected();
         upcomingCount = 12;
         renderAll();
       });
@@ -275,18 +312,22 @@
     const cells = Math.ceil((firstWeekDay + totalDays) / 7) * 7;
     for (let index = 0; index < cells; index++) {
       const day = index - firstWeekDay + 1;
-      const cell = document.createElement('div');
+      const blank = day < 1 || day > totalDays;
+      const cell = document.createElement(blank ? 'div' : 'button');
       cell.className = 'day';
-      cell.setAttribute('role', 'gridcell');
-      if (day < 1 || day > totalDays) {
+      if (blank) {
         cell.classList.add('blank');
         cell.setAttribute('aria-hidden','true');
       } else {
+        cell.type = 'button';
         const n = dateNumber(viewedYear, viewedMonth, day);
         const window = sharedAvailability(n);
         if (window) cell.classList.add('match');
         if (window && !isFullDay(window)) cell.classList.add('partial');
         if (n === todayN) cell.classList.add('today');
+        if (n === selectedDayN) cell.classList.add('chosen');
+        cell.setAttribute('aria-pressed', n === selectedDayN ? 'true' : 'false');
+        if (n === todayN) cell.setAttribute('aria-current', 'date');
         cell.setAttribute('aria-label', `${dateFmt.format(new Date(n * MS_DAY))}: ${window ? 'shared availability ' + availabilityLabel(window) : 'no shared availability'}${n === todayN ? ', today' : ''}`);
         const num = document.createElement('span');
         num.className = 'number';
@@ -298,8 +339,54 @@
           flag.textContent = isFullDay(window) ? 'ALL DAY' : timeLabel(window.start) + '+';
           cell.append(flag);
         }
+        cell.addEventListener('click', () => {
+          selectedDayN = n;
+          renderCalendar();
+          renderDetails();
+        });
       }
       grid.append(cell);
+    }
+  }
+  function renderDetails() {
+    const box = document.getElementById('day-details');
+    if (selectedDayN === null) {
+      box.hidden = true;
+      return;
+    }
+    box.hidden = false;
+    document.getElementById('detail-title').textContent =
+      dateFmt.format(new Date(selectedDayN * MS_DAY));
+    const window = sharedAvailability(selectedDayN);
+    document.getElementById('detail-summary').textContent =
+      selected.size === 0 ? 'Select people above to compare their availability.' :
+      window ? 'Shared availability: ' + availabilityLabel(window) :
+      'No shared availability for the selected people.';
+    const list = document.getElementById('detail-people');
+    list.replaceChildren();
+    for (const person of people) {
+      if (!selected.has(person.id)) continue;
+      const li = document.createElement('li');
+      const name = document.createElement('span');
+      name.textContent = person.name;
+      const status = document.createElement('span');
+      status.textContent = availabilityLabel(person.available(selectedDayN));
+      li.append(name, status);
+      list.append(li);
+    }
+  }
+  function jumpToDate(dayNum) {
+    const date = new Date(dayNum * MS_DAY);
+    viewedYear = date.getUTCFullYear();
+    viewedMonth = date.getUTCMonth();
+    selectedDayN = dayNum;
+    renderCalendar();
+    renderDetails();
+    const selectedCell = document.querySelector('.day.chosen');
+    if (selectedCell) {
+      const reducedMotion = typeof window.matchMedia === 'function' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      selectedCell.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'center' });
     }
   }
   function renderUpcoming() {
@@ -333,20 +420,28 @@
       const li = document.createElement('li');
       const rank = document.createElement('strong');
       rank.textContent = String(i + 1).padStart(2, '0');
-      li.append(rank, document.createTextNode(dateFmt.format(new Date(num * MS_DAY)) + ' · ' + availabilityLabel(window)));
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'upcoming-date';
+      button.setAttribute('aria-label', 'Go to ' + dateFmt.format(new Date(num * MS_DAY)) + ', ' + availabilityLabel(window));
+      button.append(rank, document.createTextNode(dateFmt.format(new Date(num * MS_DAY)) + ' · ' + availabilityLabel(window)));
+      button.addEventListener('click', () => jumpToDate(num));
+      li.append(button);
       list.append(li);
     });
     more.hidden = false;
   }
-  function renderAll() {renderPeople();renderCalendar();renderUpcoming();}
+  function renderAll() {renderPeople();renderCalendar();renderDetails();renderUpcoming();}
   function changeMonth(delta) {
     const d = new Date(Date.UTC(viewedYear, viewedMonth + delta, 1));
     viewedYear = d.getUTCFullYear(); viewedMonth = d.getUTCMonth();
+    selectedDayN = null;
     renderCalendar();
+    renderDetails();
   }
   document.getElementById('prev').addEventListener('click', () => changeMonth(-1));
   document.getElementById('next').addEventListener('click', () => changeMonth(1));
-  document.getElementById('today').addEventListener('click', () => {viewedYear=localNow.getFullYear();viewedMonth=localNow.getMonth();renderCalendar();});
+  document.getElementById('today').addEventListener('click', () => {viewedYear=localNow.getFullYear();viewedMonth=localNow.getMonth();selectedDayN=null;renderCalendar();renderDetails();});
   document.getElementById('more').addEventListener('click', () => {upcomingCount+=12;renderUpcoming();});
   renderAll();
 </script>
