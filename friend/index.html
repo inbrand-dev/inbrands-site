@@ -195,11 +195,11 @@
     <div class="toprow">
       <div>
         <h2 class="section-title" id="people-heading">People</h2>
-        <p class="muted">John and Anthony are loaded. Brandon and Mike are awaiting schedules and do not affect availability results. Sundays begin at noon after church, provided each person is off work.</p>
+        <p class="muted">John, Anthony, and Mike are loaded. Brandon's schedule is pending. For John and Anthony, Sundays begin at noon only when they are off work.</p>
       </div>
     </div>
     <div class="person-row" id="people"></div>
-    <div class="tag">John: repeating 28-day rotation. Anthony: Friday from 11 AM, Saturday all day. Both: available Sunday from noon when off work.</div>
+    <div class="tag">John: 28-day rotation. Anthony: Friday from 11 AM, weekends off. Mike: 4 days off / 4 days working, with Nov 7–10 off. John and Anthony start Sundays at noon when off work.</div>
   </section>
   <section class="panel" id="calendar-panel" aria-label="Monthly calendar">
     <div class="calhead">
@@ -238,6 +238,7 @@
   const positiveMod = (n, d) => ((n % d) + d) % d;
   const anchorDay = dateNumber(2026, 10, 4); // Known Wednesday off: Nov 4, 2026.
   const johnDaysOff = new Set([0, 1, 9, 10, 11, 19, 20]);
+  const mikeAnchorDay = dateNumber(2026, 10, 7); // Mike is off Nov 7–10, 2026.
   // Each availability interval uses minutes after local midnight: [start, end).
   // Day numbers are UTC-based civil dates; the calendar shows whole local dates.
   const people = [
@@ -260,7 +261,10 @@
       }
     },
     { id: 'brandon', name: 'Brandon', pending: true, available: () => null },
-    { id: 'mike', name: 'Mike', pending: true, available: () => null }
+    {
+      id: 'mike', name: 'Mike',
+      available: n => positiveMod(n - mikeAnchorDay, 8) < 4 ? { start: 0, end: 1440 } : null
+    }
   ];
   const selectionKey = 'friends-days-off:selected:v1';
   function loadSelected() {
