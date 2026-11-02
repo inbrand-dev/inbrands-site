@@ -37,6 +37,8 @@
       /* Assigned once per person, so colors remain consistent across visits. */
       --john-color: #2457a7;
       --anthony-color: #a54132;
+      --brandon-color: #7762a8;
+      --mike-color: #197b86;
     }
     @media (prefers-color-scheme: dark) {
       :root {
@@ -67,6 +69,8 @@
         --focus: #f1ca7b;
         --john-color: #9fc4ff;
         --anthony-color: #ffc0a8;
+        --brandon-color: #d4b9ff;
+        --mike-color: #94e6ed;
       }
     }
     * { box-sizing: border-box; }
@@ -86,6 +90,10 @@
     .person { font: inherit; font-weight: 700; color: var(--chip-text); background: var(--chip); border: 1px solid var(--chip-border); padding: 11px 19px; min-height: 44px; border-radius: 999px; cursor: pointer; transition: background-color .15s, border-color .15s, transform .15s; }
     .person-john { --person-color: var(--john-color); }
     .person-anthony { --person-color: var(--anthony-color); }
+    .person-brandon { --person-color: var(--brandon-color); }
+    .person-mike { --person-color: var(--mike-color); }
+    .person:disabled { cursor: default; border-color: var(--person-color); opacity: .75; }
+    .person:disabled:hover { transform: none; background: var(--chip); }
     .person[aria-pressed="true"] { color: var(--accent-text); background: var(--person-color); border-color: var(--person-color); }
     .person:hover { transform: translateY(-1px); }
     .person:not([aria-pressed="true"]):hover { background: var(--control-hover); }
@@ -179,7 +187,7 @@
     <div class="toprow">
       <div>
         <h2 class="section-title" id="people-heading">People</h2>
-        <p class="muted">John and Anthony are loaded. Sundays begin at noon after church, provided each person is off work.</p>
+        <p class="muted">John and Anthony are loaded. Brandon and Mike are awaiting schedules and do not affect availability results. Sundays begin at noon after church, provided each person is off work.</p>
       </div>
     </div>
     <div class="person-row" id="people"></div>
@@ -242,17 +250,19 @@
         if (weekday === 0) return { start: 12 * 60, end: 1440 }; // Sundays after church.
         return null; // Working Monday through Thursday.
       }
-    }
+    },
+    { id: 'brandon', name: 'Brandon', pending: true, available: () => null },
+    { id: 'mike', name: 'Mike', pending: true, available: () => null }
   ];
   const selectionKey = 'friends-days-off:selected:v1';
   function loadSelected() {
-    const defaults = new Set(people.map(p => p.id));
+    const defaults = new Set(people.filter(p => !p.pending).map(p => p.id));
     try {
       const raw = localStorage.getItem(selectionKey);
       if (raw === null) return defaults;
       const ids = JSON.parse(raw);
       if (!Array.isArray(ids)) return defaults;
-      const allowed = new Set(people.map(p => p.id));
+      const allowed = new Set(people.filter(p => !p.pending).map(p => p.id));
       return new Set(ids.filter(id => typeof id === 'string' && allowed.has(id)));
     } catch (_) {
       return defaults; // Blocked storage must not break the calendar.
@@ -306,9 +316,10 @@
       const b = document.createElement('button');
       b.className = 'person person-' + person.id;
       b.type = 'button';
-      b.textContent = (selected.has(person.id) ? '✓ ' : '') + person.name;
+      b.textContent = person.pending ? person.name + ' · Pending' : (selected.has(person.id) ? '✓ ' : '') + person.name;
+      b.disabled = Boolean(person.pending);
       b.setAttribute('aria-pressed', selected.has(person.id) ? 'true' : 'false');
-      b.addEventListener('click', () => {
+      if (!person.pending) b.addEventListener('click', () => {
         selected.has(person.id) ? selected.delete(person.id) : selected.add(person.id);
         saveSelected();
         upcomingCount = 12;
