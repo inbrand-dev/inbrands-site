@@ -199,7 +199,7 @@
   <header>
     <div class="eyebrow">Friends · Days off planner</div>
     <h1>Days Off</h1>
-    <p class="subtitle">Tap people to compare. Their colors mark individual availability; highlighted dates show when everyone selected can meet.</p>
+    <p class="subtitle">Tap people to compare. Colored dots mark individual availability; highlighted dates show shared opportunities, including tentative ones.</p>
   </header>
   <section class="panel" aria-labelledby="people-heading">
     <div class="toprow">
@@ -462,7 +462,7 @@
     const window = sharedAvailability(selectedDayN);
     document.getElementById('detail-summary').textContent =
       selected.size === 0 ? 'Select people above to compare their availability.' :
-      window ? 'Shared availability: ' + availabilityLabel(window) + (selected.has('brandon') ? (window.tentative ? ' (Brandon needs to confirm rest/sleep)' : ' (Brandon estimated)') : '') :
+      window ? (window.tentative ? 'Possible shared availability: ' : 'Shared availability: ') + availabilityLabel(window) + (selected.has('brandon') ? (window.tentative ? ' (Brandon needs to confirm rest/sleep)' : ' (Brandon estimated)') : '') :
       'No shared availability for the selected people.';
     const list = document.getElementById('detail-people');
     list.replaceChildren();
