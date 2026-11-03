@@ -30,6 +30,9 @@
       --partial-bg: #f4d58a;
       --partial-border: #ca9a38;
       --partial-ink: #604202;
+      --tentative-bg: #e9dcf5;
+      --tentative-border: #a084c0;
+      --tentative-ink: #523576;
       --today-border: #4d71ba;
       --list-bg: #f8fbfb;
       --list-border: #dfebed;
@@ -63,6 +66,9 @@
         --partial-bg: #4a3821;
         --partial-border: #aa833d;
         --partial-ink: #ffe4a7;
+        --tentative-bg: #372e4b;
+        --tentative-border: #9275b6;
+        --tentative-ink: #e4d2ff;
         --today-border: #94b7ff;
         --list-bg: #1a2b33;
         --list-border: #38515c;
@@ -115,11 +121,13 @@
     .day.blank { background: transparent; border-color: transparent; }
     .day.match { background: var(--full-bg); border-color: var(--full-border); }
     .day.match.partial { background: var(--partial-bg); border-color: var(--partial-border); }
+    .day.match.tentative { background: var(--tentative-bg); border-color: var(--tentative-border); }
     .day.today { outline: 2px solid var(--today-border); outline-offset: -2px; }
     .day-head { width: 100%; display: flex; align-items: flex-start; justify-content: space-between; gap: 2px; min-width: 0; }
     .number { color: var(--ink); font-size: .99rem; font-weight: 740; line-height: 1.2; flex: 0 0 auto; }
     .day.match .number, .day.match .flag { color: var(--full-ink); }
     .day.match.partial .number, .day.match.partial .flag { color: var(--partial-ink); }
+    .day.match.tentative .number, .day.match.tentative .flag { color: var(--tentative-ink); }
     .person-markers { display: flex; align-items: center; justify-content: flex-end; flex: 0 1 auto; min-width: 0; padding: 1px 0 0 2px; }
     .person-dot { display: block; width: 11px; height: 11px; flex: 0 0 11px; border: 1.5px solid var(--card); border-radius: 50%; background: var(--person-color); }
     .person-dot + .person-dot { margin-left: -4px; }
@@ -130,6 +138,7 @@
     .legend > span { white-space: nowrap; }
     .swatch { width: 14px; height: 14px; display: inline-block; border-radius: 4px; background: var(--full-bg); border: 1px solid var(--full-border); vertical-align: -2px; margin-right: 6px; }
     .swatch.partial-swatch { background: var(--partial-bg); border-color: var(--partial-border); }
+    .swatch.tentative-swatch { background: var(--tentative-bg); border-color: var(--tentative-border); }
     .today-swatch { width: 14px; height: 14px; display: inline-block; border-radius: 4px; border: 2px solid var(--today-border); vertical-align: -2px; margin-right: 6px; }
     .detail-panel { margin-top: 20px; padding: 16px 18px; border-radius: 13px; border: 1px solid var(--border); background: var(--control); }
     .detail-panel[hidden] { display: none; }
@@ -213,8 +222,8 @@
     </div>
     <div class="weekdays" aria-hidden="true"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
     <div id="grid" class="grid" role="group" aria-label="Days off by date"></div>
-    <div class="legend"><span><span class="swatch"></span>Everyone available all day</span><span><span class="swatch partial-swatch"></span>Everyone available from the shown time</span><span><span class="today-swatch"></span>Today</span></div>
-    <p class="muted" style="margin-top: 10px;">Solid dots = available; outlined dots = tentative (Brandon's overnight-shift transition days). Tentative days do not count as shared availability.</p>
+    <div class="legend"><span><span class="swatch"></span>Shared all day</span><span><span class="swatch partial-swatch"></span>Shared from shown time</span><span><span class="swatch tentative-swatch"></span>Tentative overlap</span><span><span class="today-swatch"></span>Today</span></div>
+    <p class="muted" style="margin-top: 10px;">Solid dots = available; outlined dots = tentative (Brandon's overnight-shift transition days). Tentative overlaps show as purple opportunities that need confirmation; they are never presented as guaranteed.</p>
     <section id="day-details" class="detail-panel" aria-live="polite" hidden>
       <h3 id="detail-title"></h3>
       <p id="detail-summary"></p>
@@ -266,15 +275,15 @@
       id: 'brandon', name: 'Brandon',
       assumed: true,
       // Four work nights starting 7 PM, followed by four off nights. Avoid guessing sleep hours.
-      // Transition dates are tentative and excluded from confirmed shared availability.
+      // Transition dates are tentative and may be listed as possible group opportunities, not confirmed.
       available: n => {
         const phase = positiveMod(n - brandonWorkAnchorDay, 8);
         return phase >= 5 ? { start: 0, end: 1440 } : null; // Three clear days off (estimated availability).
       },
       tentative: n => {
         const phase = positiveMod(n - brandonWorkAnchorDay, 8);
-        if (phase === 0) return 'Tentative: night shift begins at 7 PM; rest time unknown';
-        if (phase === 4) return 'Tentative: night shift ends at 7 AM; rest time unknown';
+        if (phase === 0) return { start: 0, end: 19 * 60, note: 'Shift begins at 7 PM; rest time unknown' };
+        if (phase === 4) return { start: 7 * 60, end: 1440, note: 'Shift ends at 7 AM; sleep time unknown' };
         return null;
       }
     },
@@ -315,15 +324,20 @@
     if (selected.size === 0) return null;
     let start = 0;
     let end = 1440;
+    let tentative = false;
     for (const person of people) {
       if (!selected.has(person.id)) continue;
-      const window = person.available(dayNum);
-      if (!window) return null;
+      let window = person.available(dayNum);
+      if (!window) {
+        window = person.tentative?.(dayNum);
+        if (!window) return null;
+        tentative = true;
+      }
       start = Math.max(start, window.start);
       end = Math.min(end, window.end);
       if (start >= end) return null;
     }
-    return { start, end };
+    return { start, end, tentative };
   }
   function isFullDay(window) { return window && window.start === 0 && window.end === 1440; }
   function timeLabel(minutes) {
@@ -333,6 +347,7 @@
   }
   function availabilityLabel(window) {
     if (!window) return 'Not available';
+    if (window.tentative) return 'Tentative · confirm timing';
     if (isFullDay(window)) return 'All day';
     if (window.end === 1440) return 'From ' + timeLabel(window.start);
     if (window.start === 0) return 'Until ' + timeLabel(window.end);
@@ -341,7 +356,8 @@
   function personAvailabilityLabel(person, dayNum) {
     const window = person.available(dayNum);
     if (window) return availabilityLabel(window) + (person.assumed ? ' (estimated)' : '');
-    return person.tentative?.(dayNum) || 'Not available';
+    const possible = person.tentative?.(dayNum);
+    return possible ? 'Tentative: ' + possible.note : 'Not available';
   }
   function renderPeople() {
     const root = document.getElementById('people');
@@ -384,12 +400,13 @@
         const markerPeople = people.filter(p => selected.has(p.id) && (p.available(n) || p.tentative?.(n)));
         if (window) cell.classList.add('match');
         if (window && !isFullDay(window)) cell.classList.add('partial');
+        if (window?.tentative) cell.classList.add('tentative');
         if (n === todayN) cell.classList.add('today');
         if (n === selectedDayN) cell.classList.add('chosen');
         cell.setAttribute('aria-pressed', n === selectedDayN ? 'true' : 'false');
         if (n === todayN) cell.setAttribute('aria-current', 'date');
         const individualStatus = people.filter(p => selected.has(p.id)).map(p => p.name + ': ' + personAvailabilityLabel(p, n)).join('; ');
-        cell.setAttribute('aria-label', `${dateFmt.format(new Date(n * MS_DAY))}: ${window ? 'shared availability ' + availabilityLabel(window) : 'no shared availability'}${individualStatus ? '; ' + individualStatus : ''}${n === todayN ? ', today' : ''}`);
+        cell.setAttribute('aria-label', `${dateFmt.format(new Date(n * MS_DAY))}: ${window ? (window.tentative ? 'possible shared availability ' : 'shared availability ') + availabilityLabel(window) : 'no shared availability'}${individualStatus ? '; ' + individualStatus : ''}${n === todayN ? ', today' : ''}`);
         const dayHead = document.createElement('span');
         dayHead.className = 'day-head';
         const num = document.createElement('span');
@@ -419,7 +436,7 @@
         if (window) {
           const flag = document.createElement('span');
           flag.className = 'flag';
-          flag.textContent = isFullDay(window) ? 'ALL DAY' : timeLabel(window.start) + '+';
+          flag.textContent = window.tentative ? 'MAYBE' : isFullDay(window) ? 'ALL DAY' : timeLabel(window.start) + '+';
           cell.append(flag);
         }
         cell.addEventListener('click', () => {
@@ -445,7 +462,7 @@
     const window = sharedAvailability(selectedDayN);
     document.getElementById('detail-summary').textContent =
       selected.size === 0 ? 'Select people above to compare their availability.' :
-      window ? 'Shared availability: ' + availabilityLabel(window) + (selected.has('brandon') ? ' (Brandon estimated)' : '') :
+      window ? 'Shared availability: ' + availabilityLabel(window) + (selected.has('brandon') ? (window.tentative ? ' (Brandon needs to confirm rest/sleep)' : ' (Brandon estimated)') : '') :
       'No shared availability for the selected people.';
     const list = document.getElementById('detail-people');
     list.replaceChildren();
