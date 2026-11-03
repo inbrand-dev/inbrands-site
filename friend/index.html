@@ -205,11 +205,11 @@
     <div class="toprow">
       <div>
         <h2 class="section-title" id="people-heading">People</h2>
-        <p class="muted">All four rotations are loaded. Brandon works 7 PM–7 AM; his shift-transition days are tentative because his sleep hours are unknown. John and Anthony start Sundays at noon when off work.</p>
+        <p class="muted">All four rotations are loaded. Brandon works 7 PM–7 AM. On mornings he finishes his four-night run, availability is estimated from noon; his return-to-work day stays tentative. John and Anthony start Sundays at noon when off work.</p>
       </div>
     </div>
     <div class="person-row" id="people"></div>
-    <div class="tag">John: 28-day rotation. Anthony: Friday 11 AM+, Saturday all day, Sunday noon+. Mike: 4 off / 4 on (Nov 7–10 off). Brandon: 4 night shifts / 4 nights off, returns Nov 6 at 7 PM.</div>
+    <div class="tag">John: 28-day rotation. Anthony: Friday 11 AM+, Saturday all day, Sunday noon+. Mike: 4 off / 4 on (Nov 7–10 off). Brandon: 4 night shifts / 4 nights off, returns Nov 6 at 7 PM; recovery day from noon (estimated).</div>
   </section>
   <section class="panel" id="calendar-panel" aria-label="Monthly calendar">
     <div class="calhead">
@@ -223,7 +223,7 @@
     <div class="weekdays" aria-hidden="true"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
     <div id="grid" class="grid" role="group" aria-label="Days off by date"></div>
     <div class="legend"><span><span class="swatch"></span>Shared all day</span><span><span class="swatch partial-swatch"></span>Shared from shown time</span><span><span class="swatch tentative-swatch"></span>Tentative overlap</span><span><span class="today-swatch"></span>Today</span></div>
-    <p class="muted" style="margin-top: 10px;">Solid dots = available; outlined dots = tentative (Brandon's overnight-shift transition days). Tentative overlaps show as purple opportunities that need confirmation; they are never presented as guaranteed.</p>
+    <p class="muted" style="margin-top: 10px;">Solid dots = available (Brandon's off-time estimates still need confirmation); outlined dots = tentative (his return-to-work days). Purple opportunities need confirmation.</p>
     <section id="day-details" class="detail-panel" aria-live="polite" hidden>
       <h3 id="detail-title"></h3>
       <p id="detail-summary"></p>
@@ -275,15 +275,15 @@
       id: 'brandon', name: 'Brandon',
       assumed: true,
       // Four work nights starting 7 PM, followed by four off nights. Avoid guessing sleep hours.
-      // Transition dates are tentative and may be listed as possible group opportunities, not confirmed.
+      // His last-work-night recovery dates are estimated from noon; return-to-work dates remain tentative.
       available: n => {
         const phase = positiveMod(n - brandonWorkAnchorDay, 8);
-        return phase >= 5 ? { start: 0, end: 1440 } : null; // Three clear days off (estimated availability).
+        if (phase === 4) return { start: 12 * 60, end: 1440 }; // Final work night ends at 7 AM; assume available from noon.
+        return phase >= 5 ? { start: 0, end: 1440 } : null; // Remaining three off days (estimated).
       },
       tentative: n => {
         const phase = positiveMod(n - brandonWorkAnchorDay, 8);
         if (phase === 0) return { start: 0, end: 19 * 60, note: 'Shift begins at 7 PM; rest time unknown' };
-        if (phase === 4) return { start: 7 * 60, end: 1440, note: 'Shift ends at 7 AM; sleep time unknown' };
         return null;
       }
     },
