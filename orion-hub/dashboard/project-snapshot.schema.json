@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://inbrands.app/orion-hub/dashboard/project-snapshot.schema.json",
   "title": "Orion Hub Project Snapshot",
-  "description": "Versioned universal snapshot contract. Historical snapshot objects are immutable once canonical.",
+  "description": "Versioned universal snapshot contract. Historical canonical snapshots are immutable once written.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -100,24 +100,7 @@
           "maxLength": 80
         },
         "originalForecast": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/hourEstimate"
-            }
-          ],
-          "type": "object",
-          "properties": {
-            "establishedAt": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          "required": [
-            "best",
-            "low",
-            "high",
-            "establishedAt"
-          ]
+          "$ref": "#/$defs/datedHourEstimate"
         }
       }
     },
@@ -223,7 +206,7 @@
     "evidenceBaseline": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/noteItem"
+        "$ref": "#/$defs/evidenceItem"
       }
     },
     "hours": {
@@ -239,24 +222,7 @@
       ],
       "properties": {
         "cumulativeProject": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/hourEstimate"
-            }
-          ],
-          "type": "object",
-          "properties": {
-            "lastRecalculated": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          "required": [
-            "best",
-            "low",
-            "high",
-            "lastRecalculated"
-          ]
+          "$ref": "#/$defs/recalculatedHourEstimate"
         },
         "spentDuringMilestone": {
           "$ref": "#/$defs/hourEstimate"
@@ -422,6 +388,62 @@
         }
       }
     },
+    "datedHourEstimate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "best",
+        "low",
+        "high",
+        "establishedAt"
+      ],
+      "properties": {
+        "best": {
+          "type": "number",
+          "minimum": 0
+        },
+        "low": {
+          "type": "number",
+          "minimum": 0
+        },
+        "high": {
+          "type": "number",
+          "minimum": 0
+        },
+        "establishedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "recalculatedHourEstimate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "best",
+        "low",
+        "high",
+        "lastRecalculated"
+      ],
+      "properties": {
+        "best": {
+          "type": "number",
+          "minimum": 0
+        },
+        "low": {
+          "type": "number",
+          "minimum": 0
+        },
+        "high": {
+          "type": "number",
+          "minimum": 0
+        },
+        "lastRecalculated": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
     "workItem": {
       "type": "object",
       "additionalProperties": false,
@@ -582,6 +604,44 @@
         }
       }
     },
+    "evidenceItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "note"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "reference": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        },
+        "verifiedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    },
     "reconciliationTarget": {
       "type": "object",
       "additionalProperties": false,
@@ -622,6 +682,13 @@
             "null"
           ],
           "maxLength": 160
+        },
+        "ownerDecisionReference": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
         }
       },
       "allOf": [
@@ -631,7 +698,10 @@
               "disposition": {
                 "const": "SUPERSEDED"
               }
-            }
+            },
+            "required": [
+              "disposition"
+            ]
           },
           "then": {
             "required": [
@@ -639,6 +709,29 @@
             ],
             "properties": {
               "replacementId": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "disposition": {
+                "const": "REMOVED / CANCELED"
+              }
+            },
+            "required": [
+              "disposition"
+            ]
+          },
+          "then": {
+            "required": [
+              "ownerDecisionReference"
+            ],
+            "properties": {
+              "ownerDecisionReference": {
                 "type": "string",
                 "minLength": 1
               }
