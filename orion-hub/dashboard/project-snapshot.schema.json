@@ -174,7 +174,7 @@
     },
     "recentlyCompleted": {
       "type": "array",
-      "maxItems": 20,
+      "maxItems": 5,
       "items": {
         "$ref": "#/$defs/workItem"
       }
