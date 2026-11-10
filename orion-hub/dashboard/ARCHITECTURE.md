@@ -109,7 +109,7 @@ Additional enforcement:
 - deferred work must remain in the deferred collection.
 - completed, superseded, or removed work cannot remain tracked under the same ID.
 - every newly tracked ID must appear in `reconciliation.newScope`.
-- old forecast-history entries must remain byte-for-byte equivalent in later snapshots.
+- old forecast-history entries must remain field-for-field equivalent in later snapshots.
 
 The runtime enforcement implementation is:
 
