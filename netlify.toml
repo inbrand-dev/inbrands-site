@@ -1,0 +1,8 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/orion-hub"
+  to = "/orion-hub/"
+  status = 301
+  force = true
