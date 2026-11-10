@@ -140,6 +140,8 @@ function renderForecast(snapshot) {
   const grid = node("div", "forecast-grid");
 
   grid.append(metricCard("Project total", snapshot.hours.cumulativeProject));
+  grid.append(metricCard("Original forecast", snapshot.milestone.originalForecast));
+  grid.append(metricCard("Spent this milestone", snapshot.hours.spentDuringMilestone));
   grid.append(metricCard("Remaining", snapshot.hours.remainingToMilestone));
   grid.append(metricCard("Projected milestone", snapshot.hours.projectedMilestoneTotal));
 
@@ -283,6 +285,15 @@ function render(snapshot) {
     fragment.append(detailsPanel("New Scope Since Prior Snapshot", snapshot.reconciliation.newScope, "No new scope."));
   }
 
+  const forecastHistory = [...snapshot.hours.forecastHistory]
+    .reverse()
+    .map((entry, index) => ({
+      id: `forecast-${index}`,
+      name: new Date(entry.capturedAt).toLocaleString(),
+      note: `Projected ${hoursText(entry.projectedTotalBest)} · Remaining ${hoursText(entry.remainingBest)}`,
+    }));
+  fragment.append(detailsPanel("Forecast History", forecastHistory, "No forecast history recorded."));
+
   root.replaceChildren(fragment);
 }
 
@@ -314,6 +325,7 @@ async function loadSnapshot() {
   }
 
   if (!response.ok) {
+    if (response.status === 401) throw new Error("Your Orion Hub session expired. Reload this page to unlock the hub again.");
     if (response.status === 404) throw new Error("No canonical snapshot exists for this project yet.");
     throw new Error(`Snapshot request failed with HTTP ${response.status}.`);
   }
