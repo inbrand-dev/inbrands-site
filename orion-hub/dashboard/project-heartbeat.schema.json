@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://inbrands.app/orion-hub/dashboard/project-heartbeat.schema.json",
+  "title": "Orion Hub Project Heartbeat",
+  "description": "Immutable no-material-change record. It does not replace or mutate the current canonical snapshot.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "heartbeatId",
+    "projectId",
+    "checkedAt",
+    "message",
+    "evidenceBaseline",
+    "currentSnapshotId"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "heartbeatId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,159}$"
+    },
+    "projectId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,63}$"
+    },
+    "checkedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "message": {
+      "const": "No material project change this week"
+    },
+    "currentSnapshotId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,159}$"
+    },
+    "evidenceBaseline": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "note"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,159}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "reference": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 2000
+          },
+          "verifiedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}
