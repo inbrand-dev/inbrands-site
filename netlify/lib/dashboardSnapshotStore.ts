@@ -109,8 +109,13 @@ function trackedItems(snapshot: SnapshotLike) {
   return items;
 }
 
-function jsonEqual(left: unknown, right: unknown) {
-  return JSON.stringify(left) === JSON.stringify(right);
+function sameForecastEntry(
+  left: { capturedAt: string; projectedTotalBest: number; remainingBest: number },
+  right: { capturedAt: string; projectedTotalBest: number; remainingBest: number },
+) {
+  return left.capturedAt === right.capturedAt
+    && left.projectedTotalBest === right.projectedTotalBest
+    && left.remainingBest === right.remainingBest;
 }
 
 function validateForecastHistory(previous: SnapshotLike, next: SnapshotLike) {
@@ -124,7 +129,7 @@ function validateForecastHistory(previous: SnapshotLike, next: SnapshotLike) {
 
   for (let index = 0; index < oldHistory.length; index += 1) {
     assert(
-      jsonEqual(oldHistory[index], newHistory[index]),
+      sameForecastEntry(oldHistory[index], newHistory[index]),
       `Forecast history entry ${index} was rewritten. Historical estimates are immutable.`,
     );
   }
