@@ -1,6 +1,9 @@
+import { getStore } from "@netlify/blobs";
+
 const COOKIE_NAME = "orion-hub-session";
 const PASSWORD_ENV = "ORION_HUB_PASSWORD";
 const SESSION_SECRET_ENV = "ORION_HUB_SESSION_SECRET";
+const DASHBOARD_STORE_NAME = "orion-dashboard-snapshots";
 const SESSION_SECONDS = 7 * 24 * 60 * 60;
 const MAX_PASSWORD_LENGTH = 256;
 
@@ -15,6 +18,18 @@ function htmlResponse(body: string, status = 200, extraHeaders: Record<string, s
       "X-Content-Type-Options": "nosniff",
       "X-Frame-Options": "DENY",
       ...extraHeaders,
+    },
+  });
+}
+
+function jsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+      "Referrer-Policy": "no-referrer",
+      "X-Content-Type-Options": "nosniff",
     },
   });
 }
@@ -151,6 +166,53 @@ function clearCookie() {
   return `${COOKIE_NAME}=; Max-Age=0; Path=/orion-hub; HttpOnly; Secure; SameSite=Strict`;
 }
 
+function validProjectId(value: string | null): value is string {
+  return Boolean(value && /^[a-z0-9][a-z0-9-]{1,63}$/.test(value));
+}
+
+function validSnapshotId(value: unknown): value is string {
+  return typeof value === "string" && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,159}$/.test(value);
+}
+
+async function dashboardCurrent(url: URL) {
+  const projectId = url.searchParams.get("project");
+  if (!validProjectId(projectId)) {
+    return jsonResponse({ error: "invalid_project", message: "A valid project id is required." }, 400);
+  }
+
+  const store = getStore(DASHBOARD_STORE_NAME);
+  const pointer = await store.get(`projects/${projectId}/current.json`, {
+    type: "json",
+    consistency: "strong",
+  }) as { snapshotId?: unknown } | null;
+
+  if (!pointer || !validSnapshotId(pointer.snapshotId)) {
+    return jsonResponse({ error: "snapshot_not_found", message: "No canonical snapshot exists for this project." }, 404);
+  }
+
+  const snapshot = await store.get(
+    `projects/${projectId}/snapshots/${pointer.snapshotId}.json`,
+    { type: "json", consistency: "strong" },
+  );
+
+  if (!snapshot) {
+    return jsonResponse({ error: "snapshot_missing", message: "The current snapshot pointer is invalid." }, 500);
+  }
+
+  return jsonResponse(snapshot);
+}
+
+async function handleAuthenticatedRequest(request: Request, context: { next: () => Promise<Response> }, url: URL) {
+  if (url.pathname === "/orion-hub/api/dashboard/current") {
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      return jsonResponse({ error: "method_not_allowed", message: "Method not allowed." }, 405);
+    }
+    return dashboardCurrent(url);
+  }
+
+  return context.next();
+}
+
 export default async (request: Request, context: { next: () => Promise<Response> }) => {
   const password = Netlify.env.get(PASSWORD_ENV)?.trim();
   const sessionSecret = Netlify.env.get(SESSION_SECRET_ENV)?.trim();
@@ -175,7 +237,7 @@ export default async (request: Request, context: { next: () => Promise<Response>
 
   const existingSession = parseCookie(request.headers.get("Cookie"), COOKIE_NAME);
   if (await validSession(existingSession, sessionSecret)) {
-    return context.next();
+    return handleAuthenticatedRequest(request, context, url);
   }
 
   if (request.method === "POST") {
@@ -201,7 +263,8 @@ export default async (request: Request, context: { next: () => Promise<Response>
     }
 
     const token = await createSession(sessionSecret);
-    const redirectUrl = new URL("/orion-hub/", url);
+    const redirectUrl = new URL(url.pathname.startsWith("/orion-hub/") ? url.pathname : "/orion-hub/", url);
+    redirectUrl.search = url.search;
     return new Response(null, {
       status: 303,
       headers: {
