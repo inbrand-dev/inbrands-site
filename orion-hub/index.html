@@ -4,136 +4,146 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow, noarchive" />
-  <meta name="theme-color" content="#111827" />
+  <meta name="theme-color" content="#0f172a" />
   <title>Orion Hub</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <main class="shell">
-    <header class="hero">
-      <div>
-        <p class="eyebrow">Personal workspace</p>
-        <h1>Orion Hub</h1>
-        <p class="subtitle">Projects, dashboards, and utilities in one place.</p>
-      </div>
-      <span class="status-pill">Private hub · V1</span>
+    <header class="topbar">
+      <p class="eyebrow">Personal workspace</p>
+      <h1>Orion Hub</h1>
+      <p class="subtitle">Projects, dashboards, and utilities.</p>
     </header>
 
-    <section class="section" aria-labelledby="active-projects">
-      <div class="section-heading">
-        <div>
+    <details class="section" open>
+      <summary>
+        <div class="summary-left">
           <p class="section-kicker">Current work</p>
-          <h2 id="active-projects">Active Projects</h2>
+          <div class="section-title-row">
+            <h2 class="section-title">Active Projects</h2>
+            <span class="count-badge">4</span>
+          </div>
+        </div>
+        <span class="chevron" aria-hidden="true">›</span>
+      </summary>
+
+      <div class="section-body">
+        <div class="tile-grid">
+          <article class="tile tile-featured tile-disabled" aria-disabled="true">
+            <div class="tile-top">
+              <div class="icon">TD</div>
+              <div class="status status-soon">Dashboard<br />next</div>
+            </div>
+            <h3 class="tile-title">IRL Tower Defense</h3>
+            <p class="tile-sub">Benchmark dashboard coming next</p>
+            <div class="tile-bottom">
+              <span class="pill">Game</span>
+              <span class="go" aria-hidden="true">→</span>
+            </div>
+          </article>
+
+          <a class="tile" href="../intrack-android-habit-tracker.html">
+            <div class="tile-top">
+              <div class="icon">IT</div>
+              <div class="status status-active">Active</div>
+            </div>
+            <h3 class="tile-title">InTrack</h3>
+            <p class="tile-sub">App + support site</p>
+            <div class="tile-bottom">
+              <span class="pill">Android</span>
+              <span class="go" aria-hidden="true">→</span>
+            </div>
+          </a>
+
+          <article class="tile tile-disabled" aria-disabled="true">
+            <div class="tile-top">
+              <div class="icon">SR</div>
+              <div class="status status-pending">URL<br />pending</div>
+            </div>
+            <h3 class="tile-title">StairStepRecipes</h3>
+            <p class="tile-sub">Deployment address still needs verification</p>
+            <div class="tile-bottom">
+              <span class="pill">Web app</span>
+              <span class="go" aria-hidden="true">→</span>
+            </div>
+          </article>
+
+          <a class="tile" href="https://findmyfoodtrucks.app/">
+            <div class="tile-top">
+              <div class="icon">FT</div>
+              <div class="status status-active">Active</div>
+            </div>
+            <h3 class="tile-title">Find My Food Trucks</h3>
+            <p class="tile-sub">Public site</p>
+            <div class="tile-bottom">
+              <span class="pill">Platform</span>
+              <span class="go" aria-hidden="true">→</span>
+            </div>
+          </a>
         </div>
       </div>
+    </details>
 
-      <div class="card-grid">
-        <article class="card card-featured">
-          <div class="card-topline">
-            <span class="tag">Game</span>
-            <span class="card-status">Dashboard next</span>
-          </div>
-          <h3>IRL Tower Defense</h3>
-          <p>Game development, architecture, balancing, testing, and benchmark tracking.</p>
-          <div class="card-footer">
-            <span class="muted">Benchmark dashboard is the next planned addition.</span>
-            <span class="button button-disabled" aria-disabled="true">Dashboard next</span>
-          </div>
-        </article>
-
-        <article class="card">
-          <div class="card-topline">
-            <span class="tag">Android</span>
-            <span class="card-status">Active</span>
-          </div>
-          <h3>InTrack</h3>
-          <p>Habit, routine, and behavior tracking for Android.</p>
-          <div class="card-footer">
-            <span class="muted">App project and support site.</span>
-            <a class="button" href="../intrack-android-habit-tracker.html">Open InTrack</a>
-          </div>
-        </article>
-
-        <article class="card">
-          <div class="card-topline">
-            <span class="tag">Web app</span>
-            <span class="card-status card-status-muted">URL pending</span>
-          </div>
-          <h3>StairStepRecipes</h3>
-          <p>Visual, process-oriented recipes and family recipe tools.</p>
-          <div class="card-footer">
-            <span class="muted">Deployment address still needs verification.</span>
-            <span class="button button-disabled" aria-disabled="true">URL pending</span>
-          </div>
-        </article>
-
-        <article class="card">
-          <div class="card-topline">
-            <span class="tag">Platform</span>
-            <span class="card-status">Active</span>
-          </div>
-          <h3>Find My Food Trucks</h3>
-          <p>Food-truck discovery and operator platform.</p>
-          <div class="card-footer">
-            <span class="muted">Public site.</span>
-            <a class="button" href="https://findmyfoodtrucks.app/">Open site</a>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section class="section" aria-labelledby="utilities">
-      <div class="section-heading">
-        <div>
+    <details class="section" open>
+      <summary>
+        <div class="summary-left">
           <p class="section-kicker">Quick access</p>
-          <h2 id="utilities">Utilities</h2>
+          <div class="section-title-row">
+            <h2 class="section-title">Utilities</h2>
+            <span class="count-badge">2</span>
+          </div>
+        </div>
+        <span class="chevron" aria-hidden="true">›</span>
+      </summary>
+
+      <div class="section-body">
+        <div class="tile-grid">
+          <article class="tile tile-disabled" aria-disabled="true">
+            <div class="tile-top">
+              <div class="icon">FC</div>
+              <div class="status status-pending">URL<br />pending</div>
+            </div>
+            <h3 class="tile-title">Friends Calendar</h3>
+            <p class="tile-sub">Shared schedule view</p>
+            <div class="tile-bottom">
+              <span class="pill">Calendar</span>
+              <span class="go" aria-hidden="true">→</span>
+            </div>
+          </article>
+
+          <a class="tile" href="../tracker-builder/">
+            <div class="tile-top">
+              <div class="icon">TB</div>
+              <div class="status status-active">Ready</div>
+            </div>
+            <h3 class="tile-title">InTrack Tracker Builder</h3>
+            <p class="tile-sub">Build tracker configs fast</p>
+            <div class="tile-bottom">
+              <span class="pill">Builder</span>
+              <span class="go" aria-hidden="true">→</span>
+            </div>
+          </a>
         </div>
       </div>
+    </details>
 
-      <div class="card-grid compact-grid">
-        <article class="card compact-card">
-          <div>
-            <div class="card-topline">
-              <span class="tag">Calendar</span>
-              <span class="card-status card-status-muted">URL pending</span>
-            </div>
-            <h3>Friends Calendar</h3>
-            <p>Shared work and off-day calendar for coordinating schedules.</p>
-          </div>
-          <span class="button button-disabled" aria-disabled="true">URL pending</span>
-        </article>
-
-        <article class="card compact-card">
-          <div>
-            <div class="card-topline">
-              <span class="tag">Builder</span>
-              <span class="card-status">Available</span>
-            </div>
-            <h3>InTrack Tracker Builder</h3>
-            <p>Build importable InTrack tracker configurations from plain-language goals.</p>
-          </div>
-          <a class="button" href="../tracker-builder/">Open builder</a>
-        </article>
-      </div>
-    </section>
-
-    <section class="section section-quiet" aria-labelledby="future">
-      <div class="section-heading">
-        <div>
+    <details class="section">
+      <summary>
+        <div class="summary-left">
           <p class="section-kicker">Later</p>
-          <h2 id="future">Future / Inactive</h2>
+          <div class="section-title-row">
+            <h2 class="section-title">Future / Inactive</h2>
+            <span class="count-badge">0</span>
+          </div>
         </div>
-      </div>
+        <span class="chevron" aria-hidden="true">›</span>
+      </summary>
 
-      <div class="quiet-panel">
-        <p>Additional dashboards, tools, and archived projects can live here as Orion Hub grows.</p>
+      <div class="section-body">
+        <p class="mini-note">Additional dashboards, tools, and archived projects can live here as Orion Hub grows.</p>
       </div>
-    </section>
-
-    <footer>
-      <span>Orion Hub</span>
-      <span>Personal project index</span>
-    </footer>
+    </details>
   </main>
 </body>
 </html>
