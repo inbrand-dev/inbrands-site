@@ -372,7 +372,7 @@ h1, h2, h3, p { margin-top: 0; }
   .primary-grid { grid-template-columns: 1.35fr 0.9fr; }
   .secondary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .key-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .forecast-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .forecast-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 430px) {
