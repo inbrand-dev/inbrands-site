@@ -36,10 +36,23 @@ interface SnapshotLike {
   snapshotId: string;
   capturedAt: string;
   project: { id: string; name: string };
+  milestone: {
+    id: string;
+    originalForecast: {
+      best: number;
+      low: number;
+      high: number;
+      establishedAt: string;
+    };
+  };
   currentWorkUnit: TrackedItem;
   remainingWorkUnits: TrackedItem[];
   deferred: Array<{ id: string; name: string }>;
   hours: {
+    spentDuringMilestone: { best: number; low: number; high: number };
+    remainingToMilestone: { best: number; low: number; high: number };
+    projectedMilestoneTotal: { best: number; low: number; high: number };
+    forecastDrift: { hours: number; percent: number; classification: string[] };
     forecastHistory: Array<{
       capturedAt: string;
       projectedTotalBest: number;
@@ -135,9 +148,47 @@ function validateForecastHistory(previous: SnapshotLike, next: SnapshotLike) {
   }
 }
 
+function sameOriginalForecast(previous: SnapshotLike, next: SnapshotLike) {
+  if (previous.milestone.id !== next.milestone.id) return true;
+  const left = previous.milestone.originalForecast;
+  const right = next.milestone.originalForecast;
+  return left.best === right.best
+    && left.low === right.low
+    && left.high === right.high
+    && left.establishedAt === right.establishedAt;
+}
+
+function closeEnough(left: number, right: number, tolerance = 0.05) {
+  return Math.abs(left - right) <= tolerance;
+}
+
+function validateForecastArithmetic(snapshot: SnapshotLike) {
+  const spent = snapshot.hours.spentDuringMilestone;
+  const remaining = snapshot.hours.remainingToMilestone;
+  const projected = snapshot.hours.projectedMilestoneTotal;
+
+  assert(closeEnough(projected.best, spent.best + remaining.best), "Projected milestone best estimate must equal spent + remaining.");
+  assert(closeEnough(projected.low, spent.low + remaining.low), "Projected milestone low estimate must equal spent + remaining.");
+  assert(closeEnough(projected.high, spent.high + remaining.high), "Projected milestone high estimate must equal spent + remaining.");
+
+  const original = snapshot.milestone.originalForecast.best;
+  const driftHours = projected.best - original;
+  assert(closeEnough(snapshot.hours.forecastDrift.hours, driftHours), "Forecast drift hours do not match projected total minus original forecast.");
+
+  if (original > 0) {
+    const expectedPercent = (driftHours / original) * 100;
+    assert(
+      Math.abs(snapshot.hours.forecastDrift.percent - expectedPercent) <= 1,
+      "Forecast drift percent does not match the projected/original forecast difference.",
+    );
+  }
+}
+
 export function validateReconciliation(previous: SnapshotLike, next: SnapshotLike) {
   assert(next.schemaVersion === 1, "Unsupported snapshot schema version.");
   assert(next.reconciliation.priorSnapshotId === previous.snapshotId, "priorSnapshotId does not match the current canonical snapshot.");
+  assert(sameOriginalForecast(previous, next), "Original milestone forecast cannot be rewritten while the milestone id is unchanged.");
+  validateForecastArithmetic(next);
 
   const previousItems = trackedItems(previous);
   const nextItems = trackedItems(next);
@@ -253,6 +304,7 @@ export async function saveCanonicalSnapshot(next: SnapshotLike) {
     validateReconciliation(previous, next);
   } else {
     assert(next.reconciliation.priorSnapshotId === null, "The first canonical snapshot must use priorSnapshotId = null.");
+    validateForecastArithmetic(next);
   }
 
   const snapshotWrite = await blobs.setJSON(snapshotKey(next.project.id, next.snapshotId), next, {
