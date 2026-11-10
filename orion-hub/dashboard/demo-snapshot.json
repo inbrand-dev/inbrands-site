@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "snapshotId": "demo-0003",
+  "capturedAt": "2026-11-10T22:00:00Z",
+  "project": {
+    "id": "demo-project",
+    "name": "Example Project",
+    "terminology": {
+      "milestone": "Milestone",
+      "workUnit": "Work Unit"
+    }
+  },
+  "milestone": {
+    "id": "m1",
+    "name": "Ready for first real-world trial",
+    "definitionOfDone": "The core workflow works end to end, the known blocking defects are closed, and the first real-world trial can begin without manual workarounds.",
+    "state": "On Track",
+    "originalForecast": {
+      "best": 10,
+      "low": 8,
+      "high": 13,
+      "establishedAt": "2026-11-01T18:00:00Z"
+    }
+  },
+  "currentWorkUnit": {
+    "id": "w3",
+    "name": "Finish the handoff flow",
+    "plainEnglishGoal": "Make the transition from setup into the real workflow reliable enough that a user can complete it without special instructions.",
+    "state": "In Progress",
+    "currentGate": "Validate the final failure-recovery path",
+    "nextAction": "Run the remaining recovery cases and document any material behavior change.",
+    "blockers": [],
+    "dependencies": [
+      "Existing setup flow"
+    ]
+  },
+  "remainingWorkUnits": [
+    {
+      "id": "w4",
+      "name": "Real-world trial",
+      "goal": "Use the workflow in normal conditions and record defects that matter before milestone closure.",
+      "state": "Planned"
+    },
+    {
+      "id": "w5",
+      "name": "Milestone closeout",
+      "goal": "Reconcile every target, close documentation gaps, and preserve the final evidence baseline.",
+      "state": "Planned"
+    }
+  ],
+  "recentlyCompleted": [
+    {
+      "id": "w2",
+      "name": "Basic recovery behavior",
+      "note": "Verified normal recovery from the expected interruption case.",
+      "state": "Completed"
+    },
+    {
+      "id": "w1",
+      "name": "Core setup flow",
+      "note": "End-to-end setup path is functioning.",
+      "state": "Completed"
+    }
+  ],
+  "deferred": [
+    {
+      "id": "d1",
+      "name": "Advanced customization",
+      "reason": "Useful, but not required for this milestone.",
+      "movedTo": "Post-milestone enhancement"
+    }
+  ],
+  "openDecisions": [
+    {
+      "id": "o1",
+      "question": "Keep the optional confirmation step?",
+      "answerNeeded": "Owner decision after the first real-world trial.",
+      "state": "Open"
+    }
+  ],
+  "blockers": [],
+  "changesSincePrior": [
+    {
+      "id": "c1",
+      "name": "Recovery path moved into active work",
+      "note": "Previously planned; now under validation."
+    },
+    {
+      "id": "c2",
+      "name": "One customization item deferred",
+      "note": "Moved out of milestone because it is not required for the first trial."
+    }
+  ],
+  "evidenceBaseline": [
+    {
+      "id": "e1",
+      "name": "Primary project record",
+      "note": "Verified current as of this snapshot."
+    },
+    {
+      "id": "e2",
+      "name": "Latest validation results",
+      "note": "Normal setup and primary recovery case verified."
+    }
+  ],
+  "hours": {
+    "cumulativeProject": {
+      "best": 31,
+      "low": 27,
+      "high": 36,
+      "lastRecalculated": "2026-11-10T22:00:00Z"
+    },
+    "spentDuringMilestone": {
+      "best": 7,
+      "low": 6,
+      "high": 8
+    },
+    "remainingToMilestone": {
+      "best": 6,
+      "low": 4,
+      "high": 9
+    },
+    "projectedMilestoneTotal": {
+      "best": 13,
+      "low": 10,
+      "high": 17
+    },
+    "forecastDrift": {
+      "hours": 3,
+      "percent": 30,
+      "classification": [
+        "Required Discovery",
+        "Estimate Refinement"
+      ]
+    },
+    "forecastHistory": [
+      {
+        "capturedAt": "2026-11-01T18:00:00Z",
+        "projectedTotalBest": 10,
+        "remainingBest": 10
+      },
+      {
+        "capturedAt": "2026-11-10T22:00:00Z",
+        "projectedTotalBest": 13,
+        "remainingBest": 6
+      }
+    ]
+  },
+  "tempo": {
+    "windowLabel": "Since prior snapshot",
+    "totalHoursApprox": 7,
+    "plannedHours": 4.5,
+    "discoveryHours": 1.5,
+    "addedScopeHours": 0,
+    "unplannedHours": 1
+  },
+  "reconciliation": {
+    "priorSnapshotId": "demo-0002",
+    "targets": [
+      {
+        "targetId": "w1",
+        "name": "Core setup flow",
+        "disposition": "COMPLETED",
+        "note": "Verified finished."
+      },
+      {
+        "targetId": "w2",
+        "name": "Basic recovery behavior",
+        "disposition": "COMPLETED",
+        "note": "Verified finished."
+      },
+      {
+        "targetId": "w3",
+        "name": "Finish the handoff flow",
+        "disposition": "CARRIED FORWARD / ACTIVE",
+        "note": "Still required for the current milestone."
+      },
+      {
+        "targetId": "w4",
+        "name": "Real-world trial",
+        "disposition": "CARRIED FORWARD / ACTIVE",
+        "note": "Still planned after the current work unit."
+      },
+      {
+        "targetId": "d1",
+        "name": "Advanced customization",
+        "disposition": "DEFERRED",
+        "note": "Moved after the current milestone."
+      }
+    ],
+    "newScope": [
+      {
+        "id": "n1",
+        "name": "Additional recovery case",
+        "reason": "Discovered while validating the handoff flow."
+      }
+    ]
+  }
+}
