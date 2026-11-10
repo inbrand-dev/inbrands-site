@@ -240,6 +240,10 @@ export default async (request: Request, context: { next: () => Promise<Response>
     return handleAuthenticatedRequest(request, context, url);
   }
 
+  if (url.pathname.startsWith("/orion-hub/api/")) {
+    return jsonResponse({ error: "unauthorized", message: "Orion Hub authentication is required." }, 401);
+  }
+
   if (request.method === "POST") {
     const contentLength = Number(request.headers.get("Content-Length") ?? "0");
     if (Number.isFinite(contentLength) && contentLength > 4096) {
