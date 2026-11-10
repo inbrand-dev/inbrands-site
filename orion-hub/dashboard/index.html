@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>Project Dashboard · Orion Hub</title>
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <main class="dashboard-shell">
+    <header class="dashboard-topbar">
+      <a class="back-link" href="../">← Orion Hub</a>
+      <div id="snapshot-meta" class="snapshot-meta"></div>
+    </header>
+
+    <div id="dashboard-root" aria-live="polite">
+      <section class="loading-card">
+        <p class="eyebrow">Project dashboard</p>
+        <h1>Loading snapshot…</h1>
+      </section>
+    </div>
+  </main>
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>
