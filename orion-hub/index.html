@@ -539,6 +539,36 @@
           current.append(el("p", "dash-muted", compactText(snapshot.currentWorkUnit.plainEnglishGoal)));
           special.append(current);
 
+          const priorProjectBest = (cumulativeBest !== null && spentBest !== null)
+            ? Math.max(0, cumulativeBest - spentBest)
+            : null;
+          const hoursDetailLines = [
+            "Worked to date: " + (cumulativeBest === null ? "Not established" : "~" + Math.round(cumulativeBest) + " h"),
+            "Previous project work: " + (priorProjectBest === null ? "Not established" : "~" + Math.round(priorProjectBest) + " h"),
+            "Current benchmark spent: " + estimateText(spent),
+            "Current benchmark remaining: " + estimateText(left),
+            "Current benchmark projected total: " + estimateText(total),
+            "Benchmark progress: " + (progress || "Not established"),
+            "",
+            "Professional replacement value uses the total project-hours estimate, not benchmark hours.",
+            "Low rate: $80/hr",
+            "Typical rate: $125/hr",
+            "High rate: $175/hr",
+            professionalTypical === null
+              ? "Replacement value: Not established"
+              : "Current typical value: " + formatMoney(professionalTypical) + " (" + formatMoney(professionalLow) + "–" + formatMoney(professionalHigh) + " range)"
+          ];
+
+          special.append(detailBlock(
+            "Hours & value details",
+            "How the project-hour totals and professional replacement value are calculated.",
+            null,
+            {
+              count: null,
+              text: hoursDetailLines.join("\n")
+            }
+          ));
+
           special.append(detailBlock(
             "Remaining work",
             "What still has to happen before this benchmark is complete.",
