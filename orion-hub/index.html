@@ -40,7 +40,12 @@
     .status-head-main { min-width:0; }
     .status-head h1 { margin:0; font-size:1.55rem; letter-spacing:-.035em; }
     .status-sub { margin:5px 0 0; color:#9aa8bc; font-size:.82rem; }
-    .stat-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:14px; }
+    .lifetime-grid { display:grid; grid-template-columns:1fr; gap:8px; margin-top:14px; }
+    .lifetime-stat { padding:14px; border:1px solid rgba(110,231,183,.28); border-radius:16px; background:rgba(110,231,183,.06); }
+    .lifetime-stat strong { display:block; font-size:1.55rem; line-height:1.05; letter-spacing:-.04em; }
+    .lifetime-stat span { display:block; margin-top:5px; color:#9aa8bc; font-size:.64rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    .lifetime-stat small { display:block; margin-top:6px; color:#9aa8bc; font-size:.7rem; line-height:1.35; }
+    .stat-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:8px; }
     .stat { padding:11px 12px; border:1px solid #26364e; border-radius:14px; background:rgba(8,15,27,.4); }
     .stat strong { display:block; font-size:1.2rem; line-height:1.05; letter-spacing:-.035em; }
     .stat span { display:block; margin-top:4px; color:#9aa8bc; font-size:.62rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
@@ -63,6 +68,7 @@
     .compact-work-item strong { display:block; font-size:.79rem; line-height:1.3; }
     .compact-work-item span { display:block; margin-top:3px; color:#9aa8bc; font-size:.7rem; line-height:1.35; }
     @media (min-width:700px) {
+      .lifetime-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .stat-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
     }
     @media (min-width:700px) {
@@ -443,25 +449,65 @@
           hero.append(head);
 
           const hours = snapshot.hours || {};
+          const cumulative = hours.cumulativeProject || null;
           const spent = hours.spentDuringMilestone || null;
           const left = hours.remainingToMilestone || null;
           const total = hours.projectedMilestoneTotal || null;
 
+          const bestHours = (value) => {
+            if (typeof value === "number" && Number.isFinite(value)) return value;
+            if (value && typeof value.best === "number" && Number.isFinite(value.best)) return value.best;
+            return null;
+          };
+
+          const formatMoney = (amount) => {
+            if (!Number.isFinite(amount)) return "Not set";
+            if (amount >= 1000000) return "~$" + (amount / 1000000).toFixed(amount >= 10000000 ? 0 : 1) + "M";
+            if (amount >= 1000) return "~$" + Math.round(amount / 1000) + "k";
+            return "~$" + Math.round(amount);
+          };
+
+          const cumulativeBest = bestHours(cumulative);
+          const professionalTypical = cumulativeBest === null ? null : cumulativeBest * 125;
+          const professionalLow = cumulativeBest === null ? null : cumulativeBest * 80;
+          const professionalHigh = cumulativeBest === null ? null : cumulativeBest * 175;
+
+          const lifetime = el("div", "lifetime-grid");
+
+          const worked = el("div", "lifetime-stat");
+          worked.append(
+            el("strong", "", estimateText(cumulative)),
+            el("span", "", "Total project hours worked"),
+            el("small", "", "Estimated cumulative effort from the beginning of the project.")
+          );
+
+          const value = el("div", "lifetime-stat");
+          value.append(
+            el("strong", "", professionalTypical === null ? "Not set" : formatMoney(professionalTypical)),
+            el("span", "", "Professional replacement value"),
+            el("small", "", professionalTypical === null
+              ? "Available once total project hours are established."
+              : formatMoney(professionalLow) + "–" + formatMoney(professionalHigh) + " range at $80–$175/hr; typical uses $125/hr.")
+          );
+
+          lifetime.append(worked, value);
+          hero.append(lifetime);
+
           let progress = null;
+          const spentBest = bestHours(spent);
+          const totalBest = bestHours(total);
           if (typeof hours.progressPercent === "number" && Number.isFinite(hours.progressPercent)) {
             progress = Math.max(0, Math.min(100, Math.round(hours.progressPercent))) + "%";
-          } else {
-            const spentBest = typeof spent === "number" ? spent : (spent && typeof spent.best === "number" ? spent.best : null);
-            const totalBest = typeof total === "number" ? total : (total && typeof total.best === "number" ? total.best : null);
-            if (spentBest !== null && totalBest && totalBest > 0) progress = Math.max(0, Math.min(100, Math.round((spentBest / totalBest) * 100))) + "%";
+          } else if (spentBest !== null && totalBest && totalBest > 0) {
+            progress = Math.max(0, Math.min(100, Math.round((spentBest / totalBest) * 100))) + "%";
           }
 
           const stats = el("div", "stat-grid");
           [
-            ["Estimated spent", estimateText(spent)],
-            ["Estimated left", estimateText(left)],
-            ["Estimated total", estimateText(total)],
-            ["Progress", progress || "Not set"]
+            ["Benchmark spent", estimateText(spent)],
+            ["Benchmark left", estimateText(left)],
+            ["Benchmark total", estimateText(total)],
+            ["Benchmark progress", progress || "Not set"]
           ].forEach(([label, value]) => {
             const n = el("div", "stat");
             n.append(el("strong", "", value), el("span", "", label));
