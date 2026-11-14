@@ -115,7 +115,7 @@ function hoursText(value) {
 }
 
 function rangeText(metric) {
-  if (!metric || metric.low === undefined || metric.high === undefined) return "";
+  if (!metric || typeof metric.low !== "number" || typeof metric.high !== "number") return "";
   return `${hoursText(metric.low)}–${hoursText(metric.high)} likely range`;
 }
 
@@ -149,12 +149,12 @@ function renderForecast(snapshot) {
   const driftMetric = node("div", "metric");
   driftMetric.append(node("div", "metric-label", "Forecast drift"));
 
-  const driftHours = Number(drift.hours || 0);
-  const driftPercent = Number(drift.percent || 0);
-  const driftClass = driftHours > 0 ? "drift-positive" : driftHours < 0 ? "drift-negative" : "";
-  const prefix = driftHours > 0 ? "+" : "";
-  driftMetric.append(node("div", `metric-value ${driftClass}`.trim(), `${prefix}${hoursText(driftHours)}`));
-  driftMetric.append(node("div", "metric-range", `${driftPercent > 0 ? "+" : ""}${driftPercent}% vs original`));
+  const driftHours = typeof drift.hours === "number" ? drift.hours : null;
+  const driftPercent = typeof drift.percent === "number" ? drift.percent : null;
+  const driftClass = driftHours === null ? "" : driftHours > 0 ? "drift-positive" : driftHours < 0 ? "drift-negative" : "";
+  const prefix = driftHours !== null && driftHours > 0 ? "+" : "";
+  driftMetric.append(node("div", `metric-value ${driftClass}`.trim(), driftHours === null ? "—" : `${prefix}${hoursText(driftHours)}`));
+  driftMetric.append(node("div", "metric-range", driftPercent === null ? "Not established" : `${driftPercent > 0 ? "+" : ""}${driftPercent}% vs original`));
   grid.append(driftMetric);
 
   p.append(grid);
