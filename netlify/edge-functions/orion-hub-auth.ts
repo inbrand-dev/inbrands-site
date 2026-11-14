@@ -1,4 +1,5 @@
 import { getStore } from "@netlify/blobs";
+import { saveCanonicalSnapshot } from "../lib/dashboardSnapshotStore.ts";
 
 const COOKIE_NAME = "orion-hub-session";
 const PASSWORD_ENV = "ORION_HUB_PASSWORD";
@@ -202,12 +203,54 @@ async function dashboardCurrent(url: URL) {
   return jsonResponse(snapshot);
 }
 
+async function dashboardSnapshotIngest(request: Request, url: URL) {
+  if (request.method !== "POST") {
+    return jsonResponse({ error: "method_not_allowed", message: "Method not allowed." }, 405);
+  }
+
+  const origin = request.headers.get("Origin");
+  if (!origin || origin !== url.origin) {
+    return jsonResponse({ error: "origin_not_allowed", message: "Same-origin request required." }, 403);
+  }
+
+  const contentType = request.headers.get("Content-Type")?.split(";")[0]?.trim().toLowerCase();
+  if (contentType !== "application/json") {
+    return jsonResponse({ error: "invalid_content_type", message: "application/json is required." }, 415);
+  }
+
+  const contentLength = Number(request.headers.get("Content-Length") ?? "0");
+  if (Number.isFinite(contentLength) && contentLength > 262144) {
+    return jsonResponse({ error: "payload_too_large", message: "Snapshot exceeds the 256 KiB ingest limit." }, 413);
+  }
+
+  let snapshot: unknown;
+  try {
+    snapshot = await request.json();
+  } catch {
+    return jsonResponse({ error: "invalid_json", message: "Snapshot body must be valid JSON." }, 400);
+  }
+
+  try {
+    const pointer = await saveCanonicalSnapshot(snapshot as Parameters<typeof saveCanonicalSnapshot>[0]);
+    return jsonResponse({ ok: true, pointer }, 201);
+  } catch (error) {
+    return jsonResponse({
+      error: "snapshot_rejected",
+      message: error instanceof Error ? error.message : "Snapshot was rejected.",
+    }, 400);
+  }
+}
+
 async function handleAuthenticatedRequest(request: Request, context: { next: () => Promise<Response> }, url: URL) {
   if (url.pathname === "/orion-hub/api/dashboard/current") {
     if (request.method !== "GET" && request.method !== "HEAD") {
       return jsonResponse({ error: "method_not_allowed", message: "Method not allowed." }, 405);
     }
     return dashboardCurrent(url);
+  }
+
+  if (url.pathname === "/orion-hub/api/dashboard/snapshot") {
+    return dashboardSnapshotIngest(request, url);
   }
 
   return context.next();
