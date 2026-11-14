@@ -242,6 +242,12 @@ async function dashboardSnapshotIngest(request: Request, url: URL) {
 }
 
 async function handleAuthenticatedRequest(request: Request, context: { next: () => Promise<Response> }, url: URL) {
+  if (url.pathname === "/orion-hub/dashboard/") {
+    const target = new URL("/orion-hub/dashboard/index.html", url);
+    target.search = url.search;
+    return target;
+  }
+
   if (url.pathname === "/orion-hub/api/dashboard/current") {
     if (request.method !== "GET" && request.method !== "HEAD") {
       return jsonResponse({ error: "method_not_allowed", message: "Method not allowed." }, 405);
