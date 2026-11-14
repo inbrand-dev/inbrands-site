@@ -3,7 +3,10 @@ import { saveCanonicalSnapshot } from "../lib/dashboardSnapshotStore.ts";
 
 const COOKIE_NAME = "orion-hub-session";
 const PASSWORD_ENV = "ORION_HUB_PASSWORD";
+const FAMILY_PASSWORD_ENV = "ORION_HUB_FAMILY_PASSWORD";
 const SESSION_SECRET_ENV = "ORION_HUB_SESSION_SECRET";
+
+type AccessRole = "owner" | "family";
 const DASHBOARD_STORE_NAME = "orion-dashboard-snapshots";
 const SESSION_SECONDS = 7 * 24 * 60 * 60;
 const MAX_PASSWORD_LENGTH = 256;
@@ -136,27 +139,40 @@ async function importHmacKey(secret: string) {
   );
 }
 
-async function createSession(secret: string) {
+async function createSession(secret: string, role: AccessRole) {
   const expires = Math.floor(Date.now() / 1000) + SESSION_SECONDS;
-  const payload = String(expires);
+  const payload = `v2.${role}.${expires}`;
   const key = await importHmacKey(secret);
   const signature = new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload)));
   return `${payload}.${toBase64Url(signature)}`;
 }
 
-async function validSession(value: string | null, secret: string) {
-  if (!value) return false;
-  const match = /^(\d{10})\.([A-Za-z0-9_-]{40,64})$/.exec(value);
-  if (!match) return false;
-
-  const expires = Number(match[1]);
-  if (!Number.isSafeInteger(expires) || expires <= Math.floor(Date.now() / 1000)) return false;
-
-  const signature = fromBase64Url(match[2]);
+async function verifySignedPayload(payload: string, encodedSignature: string, secret: string) {
+  const signature = fromBase64Url(encodedSignature);
   if (!signature) return false;
-
   const key = await importHmacKey(secret);
-  return crypto.subtle.verify("HMAC", key, signature, new TextEncoder().encode(match[1]));
+  return crypto.subtle.verify("HMAC", key, signature, new TextEncoder().encode(payload));
+}
+
+async function validSession(value: string | null, secret: string): Promise<AccessRole | null> {
+  if (!value) return null;
+
+  const current = /^v2\.(owner|family)\.(\d{10})\.([A-Za-z0-9_-]{40,64})$/.exec(value);
+  if (current) {
+    const role = current[1] as AccessRole;
+    const expires = Number(current[2]);
+    if (!Number.isSafeInteger(expires) || expires <= Math.floor(Date.now() / 1000)) return null;
+    const payload = `v2.${role}.${current[2]}`;
+    return await verifySignedPayload(payload, current[3], secret) ? role : null;
+  }
+
+  // Backward compatibility: sessions issued before role support remain Owner until they expire.
+  const legacy = /^(\d{10})\.([A-Za-z0-9_-]{40,64})$/.exec(value);
+  if (!legacy) return null;
+
+  const expires = Number(legacy[1]);
+  if (!Number.isSafeInteger(expires) || expires <= Math.floor(Date.now() / 1000)) return null;
+  return await verifySignedPayload(legacy[1], legacy[2], secret) ? "owner" : null;
 }
 
 function sessionCookie(value: string) {
@@ -175,7 +191,7 @@ function validSnapshotId(value: unknown): value is string {
   return typeof value === "string" && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,159}$/.test(value);
 }
 
-async function dashboardCurrent(url: URL) {
+async function dashboardCurrent(url: URL, role: AccessRole) {
   const projectId = url.searchParams.get("project");
   if (!validProjectId(projectId)) {
     return jsonResponse({ error: "invalid_project", message: "A valid project id is required." }, 400);
@@ -198,6 +214,12 @@ async function dashboardCurrent(url: URL) {
 
   if (!snapshot) {
     return jsonResponse({ error: "snapshot_missing", message: "The current snapshot pointer is invalid." }, 500);
+  }
+
+  if (role === "family" && typeof snapshot === "object") {
+    const safeSnapshot = structuredClone(snapshot as Record<string, unknown>);
+    delete safeSnapshot.evidenceBaseline;
+    return jsonResponse(safeSnapshot);
   }
 
   return jsonResponse(snapshot);
@@ -241,21 +263,49 @@ async function dashboardSnapshotIngest(request: Request, url: URL) {
   }
 }
 
-async function handleAuthenticatedRequest(request: Request, context: { next: () => Promise<Response> }, url: URL) {
+function ownerOnlyView(url: URL) {
+  const rootImport = (url.pathname === "/orion-hub/" || url.pathname === "/orion-hub/index.html")
+    && url.searchParams.get("view") === "import";
+  const legacyImport = url.pathname === "/orion-hub/dashboard-import.html"
+    || url.pathname.startsWith("/orion-hub/dashboard/import")
+    || (url.pathname.startsWith("/orion-hub/dashboard") && url.searchParams.get("import") === "1");
+  return rootImport || legacyImport;
+}
+
+async function handleAuthenticatedRequest(
+  request: Request,
+  context: { next: () => Promise<Response> },
+  url: URL,
+  role: AccessRole,
+) {
+  if (role === "family" && ownerOnlyView(url)) {
+    return htmlResponse("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"robots\" content=\"noindex,nofollow\"><title>Owner access required</title></head><body><main><h1>Owner access required</h1><p>This Orion Hub utility is available only to the owner account.</p><p><a href=\"/orion-hub/\">Return to Orion Hub</a></p></main></body></html>", 403);
+  }
+
   if (url.pathname === "/orion-hub/dashboard/") {
     const target = new URL("/orion-hub/dashboard/index.html", url);
     target.search = url.search;
     return target;
   }
 
+  if (url.pathname === "/orion-hub/api/session") {
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      return jsonResponse({ error: "method_not_allowed", message: "Method not allowed." }, 405);
+    }
+    return jsonResponse({ role });
+  }
+
   if (url.pathname === "/orion-hub/api/dashboard/current") {
     if (request.method !== "GET" && request.method !== "HEAD") {
       return jsonResponse({ error: "method_not_allowed", message: "Method not allowed." }, 405);
     }
-    return dashboardCurrent(url);
+    return dashboardCurrent(url, role);
   }
 
   if (url.pathname === "/orion-hub/api/dashboard/snapshot") {
+    if (role !== "owner") {
+      return jsonResponse({ error: "forbidden", message: "Owner access is required." }, 403);
+    }
     return dashboardSnapshotIngest(request, url);
   }
 
@@ -264,6 +314,7 @@ async function handleAuthenticatedRequest(request: Request, context: { next: () 
 
 export default async (request: Request, context: { next: () => Promise<Response> }) => {
   const password = Netlify.env.get(PASSWORD_ENV)?.trim();
+  const familyPassword = Netlify.env.get(FAMILY_PASSWORD_ENV)?.trim();
   const sessionSecret = Netlify.env.get(SESSION_SECRET_ENV)?.trim();
 
   if (!password || !sessionSecret || sessionSecret.length < 32) {
@@ -285,8 +336,9 @@ export default async (request: Request, context: { next: () => Promise<Response>
   }
 
   const existingSession = parseCookie(request.headers.get("Cookie"), COOKIE_NAME);
-  if (await validSession(existingSession, sessionSecret)) {
-    return handleAuthenticatedRequest(request, context, url);
+  const existingRole = await validSession(existingSession, sessionSecret);
+  if (existingRole) {
+    return handleAuthenticatedRequest(request, context, url, existingRole);
   }
 
   if (url.pathname.startsWith("/orion-hub/api/")) {
@@ -311,11 +363,18 @@ export default async (request: Request, context: { next: () => Promise<Response>
       return htmlResponse(loginPage("Enter the hub password."), 400);
     }
 
-    if (!(await passwordMatches(candidate, password))) {
+    const [ownerMatch, familyMatch] = await Promise.all([
+      passwordMatches(candidate, password),
+      familyPassword ? passwordMatches(candidate, familyPassword) : Promise.resolve(false),
+    ]);
+
+    if (!ownerMatch && !familyMatch) {
       return htmlResponse(loginPage("Incorrect password."), 401);
     }
 
-    const token = await createSession(sessionSecret);
+    // If the same password is ever configured for both roles, Owner wins.
+    const role: AccessRole = ownerMatch ? "owner" : "family";
+    const token = await createSession(sessionSecret, role);
     const redirectUrl = new URL(url.pathname.startsWith("/orion-hub/") ? url.pathname : "/orion-hub/", url);
     redirectUrl.search = url.search;
     return new Response(null, {
