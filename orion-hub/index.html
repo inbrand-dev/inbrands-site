@@ -468,9 +468,9 @@
           };
 
           const cumulativeBest = bestHours(cumulative);
-          const professionalTypical = cumulativeBest === null ? null : cumulativeBest * 125;
-          const professionalLow = cumulativeBest === null ? null : cumulativeBest * 80;
-          const professionalHigh = cumulativeBest === null ? null : cumulativeBest * 175;
+          const professionalTypical = cumulativeBest === null ? null : cumulativeBest * 80;
+          const professionalLow = cumulativeBest === null ? null : cumulativeBest * 60;
+          const professionalHigh = cumulativeBest === null ? null : cumulativeBest * 125;
 
           const lifetime = el("div", "lifetime-grid");
 
@@ -487,7 +487,7 @@
             el("span", "", "Professional replacement value"),
             el("small", "", professionalTypical === null
               ? "Available once total project hours are established."
-              : formatMoney(professionalLow) + "–" + formatMoney(professionalHigh) + " range at $80–$175/hr; typical uses $125/hr.")
+              : formatMoney(professionalLow) + "–" + formatMoney(professionalHigh) + " comparison range; conservative headline uses $80/hr.")
           );
 
           lifetime.append(worked, value);
@@ -551,12 +551,12 @@
             "Benchmark progress: " + (progress || "Not established"),
             "",
             "Professional replacement value uses the total project-hours estimate, not benchmark hours.",
-            "Low rate: $80/hr",
-            "Typical rate: $125/hr",
-            "High rate: $175/hr",
+            "Low comparison rate: $60/hr",
+            "Conservative headline rate: $80/hr",
+            "Senior-equivalent comparison rate: $125/hr",
             professionalTypical === null
               ? "Replacement value: Not established"
-              : "Current typical value: " + formatMoney(professionalTypical) + " (" + formatMoney(professionalLow) + "–" + formatMoney(professionalHigh) + " range)"
+              : "Current conservative value: " + formatMoney(professionalTypical) + " (" + formatMoney(professionalLow) + "–" + formatMoney(professionalHigh) + " comparison range)"
           ];
 
           special.append(detailBlock(
