@@ -39,24 +39,24 @@ interface SnapshotLike {
   milestone: {
     id: string;
     originalForecast: {
-      best: number;
-      low: number;
-      high: number;
-      establishedAt: string;
+      best: number | null;
+      low: number | null;
+      high: number | null;
+      establishedAt: string | null;
     };
   };
   currentWorkUnit: TrackedItem;
   remainingWorkUnits: TrackedItem[];
   deferred: Array<{ id: string; name: string }>;
   hours: {
-    spentDuringMilestone: { best: number; low: number; high: number };
-    remainingToMilestone: { best: number; low: number; high: number };
-    projectedMilestoneTotal: { best: number; low: number; high: number };
-    forecastDrift: { hours: number; percent: number; classification: string[] };
+    spentDuringMilestone: { best: number | null; low: number | null; high: number };
+    remainingToMilestone: { best: number | null; low: number | null; high: number };
+    projectedMilestoneTotal: { best: number | null; low: number | null; high: number };
+    forecastDrift: { hours: number | null; percent: number | null; classification: string[] };
     forecastHistory: Array<{
       capturedAt: string;
-      projectedTotalBest: number;
-      remainingBest: number;
+      projectedTotalBest: number | null;
+      remainingBest: number | null;
     }>;
   };
   evidenceBaseline: unknown[];
@@ -123,8 +123,8 @@ function trackedItems(snapshot: SnapshotLike) {
 }
 
 function sameForecastEntry(
-  left: { capturedAt: string; projectedTotalBest: number; remainingBest: number },
-  right: { capturedAt: string; projectedTotalBest: number; remainingBest: number },
+  left: { capturedAt: string; projectedTotalBest: number | null; remainingBest: number },
+  right: { capturedAt: string; projectedTotalBest: number | null; remainingBest: number },
 ) {
   return left.capturedAt === right.capturedAt
     && left.projectedTotalBest === right.projectedTotalBest
@@ -162,25 +162,37 @@ function closeEnough(left: number, right: number, tolerance = 0.05) {
   return Math.abs(left - right) <= tolerance;
 }
 
+function allKnown(values: Array<number | null>) {
+  return values.every((value): value is number => typeof value === "number" && Number.isFinite(value));
+}
+
 function validateForecastArithmetic(snapshot: SnapshotLike) {
   const spent = snapshot.hours.spentDuringMilestone;
   const remaining = snapshot.hours.remainingToMilestone;
   const projected = snapshot.hours.projectedMilestoneTotal;
 
-  assert(closeEnough(projected.best, spent.best + remaining.best), "Projected milestone best estimate must equal spent + remaining.");
-  assert(closeEnough(projected.low, spent.low + remaining.low), "Projected milestone low estimate must equal spent + remaining.");
-  assert(closeEnough(projected.high, spent.high + remaining.high), "Projected milestone high estimate must equal spent + remaining.");
+  if (allKnown([projected.best, spent.best, remaining.best])) {
+    assert(closeEnough(projected.best, spent.best + remaining.best), "Projected milestone best estimate must equal spent + remaining.");
+  }
+  if (allKnown([projected.low, spent.low, remaining.low])) {
+    assert(closeEnough(projected.low, spent.low + remaining.low), "Projected milestone low estimate must equal spent + remaining.");
+  }
+  if (allKnown([projected.high, spent.high, remaining.high])) {
+    assert(closeEnough(projected.high, spent.high + remaining.high), "Projected milestone high estimate must equal spent + remaining.");
+  }
 
   const original = snapshot.milestone.originalForecast.best;
-  const driftHours = projected.best - original;
-  assert(closeEnough(snapshot.hours.forecastDrift.hours, driftHours), "Forecast drift hours do not match projected total minus original forecast.");
+  if (allKnown([projected.best, original, snapshot.hours.forecastDrift.hours])) {
+    const driftHours = projected.best - original;
+    assert(closeEnough(snapshot.hours.forecastDrift.hours, driftHours), "Forecast drift hours do not match projected total minus original forecast.");
 
-  if (original > 0) {
-    const expectedPercent = (driftHours / original) * 100;
-    assert(
-      Math.abs(snapshot.hours.forecastDrift.percent - expectedPercent) <= 1,
-      "Forecast drift percent does not match the projected/original forecast difference.",
-    );
+    if (original > 0 && typeof snapshot.hours.forecastDrift.percent === "number") {
+      const expectedPercent = (driftHours / original) * 100;
+      assert(
+        Math.abs(snapshot.hours.forecastDrift.percent - expectedPercent) <= 1,
+        "Forecast drift percent does not match the projected/original forecast difference.",
+      );
+    }
   }
 }
 
