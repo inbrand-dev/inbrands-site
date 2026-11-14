@@ -303,6 +303,106 @@ function render(snapshot) {
   root.replaceChildren(fragment);
 }
 
+function renderImporter() {
+  document.title = "Snapshot Loader · Orion Hub";
+  meta.textContent = "Authenticated utility";
+
+  const card = node("section", "panel");
+  card.append(node("p", "eyebrow", "Authenticated utility"));
+  card.append(node("h1", "", "Snapshot Loader"));
+  card.append(node("p", "hero-subtitle", "Loads a prepared canonical snapshot into Orion Hub. This page does not edit project data."));
+
+  const label = node("label", "fact-label", "Snapshot JSON");
+  label.htmlFor = "snapshot-file";
+  label.style.marginTop = "18px";
+  label.style.display = "block";
+
+  const input = document.createElement("input");
+  input.id = "snapshot-file";
+  input.type = "file";
+  input.accept = ".json,application/json";
+  input.style.width = "100%";
+  input.style.marginTop = "8px";
+
+  const preview = node("pre", "fact", "Choose a snapshot file.");
+  preview.style.whiteSpace = "pre-wrap";
+  preview.style.marginTop = "14px";
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = "Import canonical snapshot";
+  button.disabled = true;
+  button.style.width = "100%";
+  button.style.minHeight = "48px";
+  button.style.marginTop = "14px";
+  button.style.borderRadius = "13px";
+  button.style.fontWeight = "850";
+
+  const result = node("pre", "fact", "");
+  result.hidden = true;
+  result.style.whiteSpace = "pre-wrap";
+  result.style.marginTop = "14px";
+
+  let snapshot = null;
+
+  input.addEventListener("change", async () => {
+    snapshot = null;
+    button.disabled = true;
+    result.hidden = true;
+    const file = input.files?.[0];
+    if (!file) {
+      preview.textContent = "Choose a snapshot file.";
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(await file.text());
+      if (parsed?.schemaVersion !== 1) throw new Error("Unsupported or missing schemaVersion.");
+      if (!parsed?.project?.id || !parsed?.project?.name) throw new Error("Project identity is missing.");
+      if (!parsed?.snapshotId) throw new Error("snapshotId is missing.");
+      if (!parsed?.milestone?.name) throw new Error("Milestone is missing.");
+      if (!parsed?.currentWorkUnit?.name) throw new Error("Current work unit is missing.");
+
+      snapshot = parsed;
+      preview.textContent = [
+        `Project: ${parsed.project.name} (${parsed.project.id})`,
+        `Snapshot: ${parsed.snapshotId}`,
+        `Milestone: ${parsed.milestone.name}`,
+        `Current work: ${parsed.currentWorkUnit.name}`,
+        `Prior snapshot: ${parsed.reconciliation?.priorSnapshotId ?? "none — initial snapshot"}`,
+      ].join("\n");
+      button.disabled = false;
+    } catch (error) {
+      preview.textContent = `Rejected locally: ${error instanceof Error ? error.message : String(error)}`;
+    }
+  });
+
+  button.addEventListener("click", async () => {
+    if (!snapshot) return;
+    button.disabled = true;
+    result.hidden = false;
+    result.textContent = "Importing…";
+
+    try {
+      const response = await fetch("/orion-hub/api/dashboard/snapshot", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(snapshot),
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.message || `HTTP ${response.status}`);
+      result.textContent = `Imported. Current snapshot: ${body.pointer?.snapshotId ?? snapshot.snapshotId}`;
+    } catch (error) {
+      result.textContent = `Import failed: ${error instanceof Error ? error.message : String(error)}`;
+      button.disabled = false;
+    }
+  });
+
+  card.append(label, input, preview, button, result);
+  root.replaceChildren(card);
+}
+
 function renderError(error) {
   const card = node("section", "error-card");
   card.append(node("p", "eyebrow", "Dashboard unavailable"));
@@ -339,4 +439,8 @@ async function loadSnapshot() {
   return validateSnapshot(await response.json());
 }
 
-loadSnapshot().then(render).catch(renderError);
+if (new URLSearchParams(location.search).get("import") === "1") {
+  renderImporter();
+} else {
+  loadSnapshot().then(render).catch(renderError);
+}
