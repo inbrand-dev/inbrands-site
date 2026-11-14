@@ -443,9 +443,9 @@
           hero.append(head);
 
           const hours = snapshot.hours || {};
-          const spent = hours.spent || hours.timeSpent || hours.estimatedSpent || null;
-          const left = hours.remaining || hours.estimatedRemaining || hours.remainingEstimate || null;
-          const total = hours.projectedMilestoneTotal || hours.estimatedTotal || null;
+          const spent = hours.spentDuringMilestone || null;
+          const left = hours.remainingToMilestone || null;
+          const total = hours.projectedMilestoneTotal || null;
 
           let progress = null;
           if (typeof hours.progressPercent === "number" && Number.isFinite(hours.progressPercent)) {
@@ -482,7 +482,7 @@
           const blockersCount = countOf(snapshot.blockers) + countOf(snapshot.currentWorkUnit.blockers);
           const decisionsCount = countOf(snapshot.openDecisions);
           chips.append(
-            el("span", "status-chip", "Gate: " + compactText(snapshot.currentWorkUnit.currentGate, "None")),
+            el("span", "status-chip", snapshot.currentWorkUnit.currentGate ? "Gate: Verification pending" : "Gate: Clear"),
             el("span", "status-chip", "Blockers: " + blockersCount),
             el("span", "status-chip", "Decisions: " + decisionsCount)
           );
