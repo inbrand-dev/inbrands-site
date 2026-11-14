@@ -36,6 +36,8 @@
     .import-button:disabled { opacity:.45; cursor:not-allowed; }
     .import-output { white-space:pre-wrap; word-break:break-word; margin:12px 0 0; padding:11px; border:1px solid #26364e; border-radius:12px; background:#0b1323; color:#9aa8bc; font-size:.78rem; }
     .view-error { color:#fecaca; }
+    .owner-only { display:none !important; }
+    body.owner-access .owner-only { display:flex !important; }
     .status-head { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:12px; }
     .status-head-main { min-width:0; }
     .status-head h1 { margin:0; font-size:1.55rem; letter-spacing:-.035em; }
@@ -163,7 +165,7 @@
           <p class="section-kicker">Quick access</p>
           <div class="section-title-row">
             <h2 class="section-title">Utilities</h2>
-            <span class="count-badge">4</span>
+            <span class="count-badge" id="utilities-count">4</span>
           </div>
         </div>
         <span class="chevron" aria-hidden="true">›</span>
@@ -197,7 +199,7 @@
             </div>
           </a>
 
-          <a class="tile" href="?view=import">
+          <a class="tile owner-only" href="?view=import" aria-label="Snapshot Loader — owner only">
             <div class="tile-top">
               <div class="icon">SL</div>
               <div class="status status-active">Ready</div>
@@ -249,7 +251,25 @@
   </main>
 
   <script>
-    (() => {
+    window.orionAccessRole = fetch("/orion-hub/api/session", {
+      credentials: "same-origin",
+      cache: "no-store"
+    })
+      .then((response) => response.ok ? response.json() : { role: "family" })
+      .then((session) => {
+        const role = session && session.role === "owner" ? "owner" : "family";
+        if (role === "owner") {
+          document.body.classList.add("owner-access");
+        } else {
+          const utilitiesCount = document.querySelector("#utilities-count");
+          if (utilitiesCount) utilitiesCount.textContent = "3";
+        }
+        return role;
+      })
+      .catch(() => "family");
+
+    (async () => {
+      const accessRole = await window.orionAccessRole;
       const params = new URLSearchParams(location.search);
       const view = params.get("view");
       if (!view) return;
@@ -646,18 +666,20 @@
             { emptyText: "Nothing is intentionally deferred." }
           ));
 
-          const evidenceItems = Array.isArray(snapshot.evidenceBaseline)
-            ? snapshot.evidenceBaseline.map((entry) => {
-                if (typeof entry === "string") return { name: "Technical reference", note: entry };
-                return entry;
-              })
-            : [];
-          special.append(detailBlock(
-            "Technical evidence",
-            "Commits, design records, audit packets, tests, and exact identifiers. Open this only when you need to inspect the proof behind the plain-English status.",
-            evidenceItems,
-            { count: evidenceItems.length, emptyText: "No technical evidence recorded." }
-          ));
+          if (accessRole === "owner") {
+            const evidenceItems = Array.isArray(snapshot.evidenceBaseline)
+              ? snapshot.evidenceBaseline.map((entry) => {
+                  if (typeof entry === "string") return { name: "Technical reference", note: entry };
+                  return entry;
+                })
+              : [];
+            special.append(detailBlock(
+              "Technical evidence",
+              "Commits, design records, audit packets, tests, and exact identifiers. Open this only when you need to inspect the proof behind the plain-English status.",
+              evidenceItems,
+              { count: evidenceItems.length, emptyText: "No technical evidence recorded." }
+            ));
+          }
         } catch (err) {
           loading.replaceChildren(el("p", "dash-label", "Dashboard unavailable"), el("h2", "", "Snapshot could not be loaded"), el("p", "dash-muted view-error", err && err.message ? err.message : String(err)));
         }
