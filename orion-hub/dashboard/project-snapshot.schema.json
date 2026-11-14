@@ -243,10 +243,16 @@
           ],
           "properties": {
             "hours": {
-              "type": "number"
+              "type": [
+                "number",
+                "null"
+              ]
             },
             "percent": {
-              "type": "number"
+              "type": [
+                "number",
+                "null"
+              ]
             },
             "classification": {
               "type": "array",
@@ -278,11 +284,17 @@
                 "format": "date-time"
               },
               "projectedTotalBest": {
-                "type": "number",
+                "type": [
+                  "number",
+                  "null"
+                ],
                 "minimum": 0
               },
               "remainingBest": {
-                "type": "number",
+                "type": [
+                  "number",
+                  "null"
+                ],
                 "minimum": 0
               }
             }
@@ -375,15 +387,24 @@
       ],
       "properties": {
         "best": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0
         },
         "low": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0
         },
         "high": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0
         }
       }
@@ -399,19 +420,31 @@
       ],
       "properties": {
         "best": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0
         },
         "low": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0
         },
         "high": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0
         },
         "establishedAt": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "format": "date-time"
         }
       }
@@ -427,19 +460,31 @@
       ],
       "properties": {
         "best": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0
         },
         "low": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0
         },
         "high": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0
         },
         "lastRecalculated": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "format": "date-time"
         }
       }
