@@ -7,6 +7,41 @@
   <meta name="theme-color" content="#0f172a" />
   <title>Orion Hub</title>
   <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    .hub-view { margin-top: 14px; }
+    .hub-view[hidden] { display: none; }
+    .view-back { display:inline-block; margin-bottom:14px; color:#9aa8bc; text-decoration:none; font-size:.82rem; font-weight:800; }
+    .view-back:hover { color:#6ee7b7; }
+    .dash-card { margin-top:12px; padding:16px; border:1px solid #223149; border-radius:20px; background:linear-gradient(180deg,rgba(20,30,49,.97),rgba(14,22,37,.97)); box-shadow:0 14px 32px rgba(0,0,0,.22); }
+    .dash-card.featured { border-color:rgba(110,231,183,.3); background:linear-gradient(180deg,rgba(18,49,45,.92),rgba(14,22,37,.97)); }
+    .dash-card h2,.dash-card h3 { margin:0; letter-spacing:-.025em; }
+    .dash-card h2 { font-size:1.45rem; }
+    .dash-card h3 { font-size:1rem; }
+    .dash-muted { margin:6px 0 0; color:#9aa8bc; font-size:.82rem; line-height:1.42; }
+    .dash-label { margin:0 0 6px; color:#6ee7b7; font-size:.68rem; font-weight:850; letter-spacing:.1em; text-transform:uppercase; }
+    .dash-grid { display:grid; grid-template-columns:1fr; gap:12px; }
+    .dash-list { display:grid; gap:8px; margin:10px 0 0; padding:0; list-style:none; }
+    .dash-item { padding:11px 12px; border:1px solid #26364e; border-radius:14px; background:rgba(8,15,27,.35); }
+    .dash-item strong { display:block; font-size:.86rem; }
+    .dash-item span { display:block; margin-top:4px; color:#9aa8bc; font-size:.76rem; line-height:1.38; }
+    .dash-row { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+    .dash-badge { flex:0 0 auto; padding:4px 8px; border:1px solid #31425a; border-radius:999px; color:#dbe6f5; font-size:.64rem; font-weight:850; }
+    .dash-fields { display:grid; gap:8px; margin-top:12px; grid-template-columns:1fr; }
+    .dash-field { padding:10px 11px; border:1px solid #26364e; border-radius:13px; background:rgba(8,15,27,.35); }
+    .dash-field b { display:block; margin-bottom:3px; color:#9aa8bc; font-size:.63rem; letter-spacing:.07em; text-transform:uppercase; }
+    .dash-field span { font-size:.8rem; line-height:1.35; }
+    .import-input { width:100%; margin-top:10px; padding:11px; border:1px solid #31425a; border-radius:12px; background:#101827; color:#eef5ff; }
+    .import-button { width:100%; min-height:46px; margin-top:12px; border:1px solid rgba(110,231,183,.35); border-radius:12px; background:#6ee7b7; color:#082019; font:inherit; font-weight:850; cursor:pointer; }
+    .import-button:disabled { opacity:.45; cursor:not-allowed; }
+    .import-output { white-space:pre-wrap; word-break:break-word; margin:12px 0 0; padding:11px; border:1px solid #26364e; border-radius:12px; background:#0b1323; color:#9aa8bc; font-size:.78rem; }
+    .view-error { color:#fecaca; }
+    @media (min-width:700px) {
+      .dash-grid.two { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .dash-fields { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+  </style>
+
 </head>
 <body>
   <main class="shell">
@@ -15,6 +50,8 @@
       <h1>Orion Hub</h1>
       <p class="subtitle">Projects, dashboards, and utilities.</p>
     </header>
+
+    <section id="special-view" class="hub-view" hidden></section>
 
     <details class="section" open>
       <summary>
@@ -30,18 +67,18 @@
 
       <div class="section-body">
         <div class="tile-grid">
-          <article class="tile tile-featured tile-disabled" aria-disabled="true">
+          <a class="tile tile-featured" href="?view=dashboard&amp;project=irl-tower-defense">
             <div class="tile-top">
               <div class="icon">TD</div>
-              <div class="status status-soon">Dashboard<br />next</div>
+              <div class="status status-active">Dashboard</div>
             </div>
             <h3 class="tile-title">IRL Tower Defense</h3>
-            <p class="tile-sub">Benchmark dashboard coming next</p>
+            <p class="tile-sub">Benchmark progress and current gate</p>
             <div class="tile-bottom">
               <span class="pill">Game</span>
               <span class="go" aria-hidden="true">→</span>
             </div>
-          </article>
+          </a>
 
           <a class="tile" href="../intrack-android-habit-tracker.html">
             <div class="tile-top">
@@ -91,7 +128,7 @@
           <p class="section-kicker">Quick access</p>
           <div class="section-title-row">
             <h2 class="section-title">Utilities</h2>
-            <span class="count-badge">2</span>
+            <span class="count-badge">3</span>
           </div>
         </div>
         <span class="chevron" aria-hidden="true">›</span>
@@ -124,6 +161,19 @@
               <span class="go" aria-hidden="true">→</span>
             </div>
           </a>
+
+          <a class="tile" href="?view=import">
+            <div class="tile-top">
+              <div class="icon">SL</div>
+              <div class="status status-active">Ready</div>
+            </div>
+            <h3 class="tile-title">Snapshot Loader</h3>
+            <p class="tile-sub">Load a prepared project snapshot</p>
+            <div class="tile-bottom">
+              <span class="pill">Utility</span>
+              <span class="go" aria-hidden="true">→</span>
+            </div>
+          </a>
         </div>
       </div>
     </details>
@@ -149,5 +199,226 @@
       <a href="?logout=1">Lock Hub</a>
     </footer>
   </main>
+
+  <script>
+    (() => {
+      const params = new URLSearchParams(location.search);
+      const view = params.get("view");
+      if (!view) return;
+
+      const special = document.querySelector("#special-view");
+      const header = document.querySelector(".topbar");
+      document.querySelectorAll(".section,.hub-footer").forEach((el) => { el.hidden = true; });
+      header.hidden = true;
+      special.hidden = false;
+
+      const el = (tag, cls, text) => {
+        const n = document.createElement(tag);
+        if (cls) n.className = cls;
+        if (text !== undefined && text !== null) n.textContent = String(text);
+        return n;
+      };
+
+      const back = () => {
+        const a = el("a", "view-back", "← Orion Hub");
+        a.href = "./";
+        return a;
+      };
+
+      const card = (label, title, featured = false) => {
+        const s = el("section", "dash-card" + (featured ? " featured" : ""));
+        if (label) s.append(el("p", "dash-label", label));
+        if (title) s.append(el("h2", "", title));
+        return s;
+      };
+
+      const addList = (parent, items, emptyText) => {
+        if (!items || !items.length) {
+          parent.append(el("p", "dash-muted", emptyText));
+          return;
+        }
+        const ul = el("ul", "dash-list");
+        items.forEach((item) => {
+          const li = el("li", "dash-item");
+          const name = item.name || item.title || item.summary || item.question || "Untitled";
+          li.append(el("strong", "", name));
+          const note = item.goal || item.note || item.reason || item.impact || item.answerNeeded || "";
+          if (note) li.append(el("span", "", note));
+          ul.append(li);
+        });
+        parent.append(ul);
+      };
+
+      const renderImport = () => {
+        document.title = "Snapshot Loader · Orion Hub";
+        special.append(back());
+
+        const s = card("Authenticated utility", "Snapshot Loader", true);
+        s.append(el("p", "dash-muted", "Load a prepared canonical snapshot into Orion Hub. This does not edit project data."));
+
+        const input = el("input", "import-input");
+        input.type = "file";
+        input.accept = ".json,application/json";
+
+        const preview = el("pre", "import-output", "Choose a snapshot JSON file.");
+        const button = el("button", "import-button", "Import canonical snapshot");
+        button.type = "button";
+        button.disabled = true;
+        const result = el("pre", "import-output", "");
+        result.hidden = true;
+        let snapshot = null;
+
+        input.addEventListener("change", async () => {
+          snapshot = null;
+          button.disabled = true;
+          result.hidden = true;
+          const file = input.files && input.files[0];
+          if (!file) {
+            preview.textContent = "Choose a snapshot JSON file.";
+            return;
+          }
+          try {
+            const parsed = JSON.parse(await file.text());
+            if (parsed && parsed.schemaVersion !== 1) throw new Error("Unsupported or missing schemaVersion.");
+            if (!parsed || !parsed.project || !parsed.project.id || !parsed.project.name) throw new Error("Project identity is missing.");
+            if (!parsed.snapshotId) throw new Error("snapshotId is missing.");
+            if (!parsed.milestone || !parsed.milestone.name) throw new Error("Milestone is missing.");
+            if (!parsed.currentWorkUnit || !parsed.currentWorkUnit.name) throw new Error("Current work unit is missing.");
+            snapshot = parsed;
+            preview.textContent = [
+              "Project: " + parsed.project.name + " (" + parsed.project.id + ")",
+              "Snapshot: " + parsed.snapshotId,
+              "Milestone: " + parsed.milestone.name,
+              "Current work: " + parsed.currentWorkUnit.name,
+              "Prior snapshot: " + ((parsed.reconciliation && parsed.reconciliation.priorSnapshotId) || "none — initial snapshot")
+            ].join("\n");
+            button.disabled = false;
+          } catch (err) {
+            preview.textContent = "Rejected locally: " + (err && err.message ? err.message : String(err));
+          }
+        });
+
+        button.addEventListener("click", async () => {
+          if (!snapshot) return;
+          button.disabled = true;
+          result.hidden = false;
+          result.classList.remove("view-error");
+          result.textContent = "Importing…";
+          try {
+            const response = await fetch("/orion-hub/api/dashboard/snapshot", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(snapshot)
+            });
+            const body = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(body.message || ("HTTP " + response.status));
+            result.textContent = "Imported. Current snapshot: " + ((body.pointer && body.pointer.snapshotId) || snapshot.snapshotId);
+          } catch (err) {
+            result.classList.add("view-error");
+            result.textContent = "Import failed: " + (err && err.message ? err.message : String(err));
+            button.disabled = false;
+          }
+        });
+
+        s.append(input, preview, button, result);
+        special.append(s);
+      };
+
+      const renderDashboard = async () => {
+        const project = params.get("project");
+        if (!project || !/^[a-z0-9][a-z0-9-]{1,63}$/.test(project)) {
+          special.append(back(), el("p", "view-error", "No valid project was selected."));
+          return;
+        }
+
+        document.title = "Project Dashboard · Orion Hub";
+        special.append(back());
+        const loading = card("Project dashboard", "Loading snapshot…", true);
+        special.append(loading);
+
+        try {
+          const response = await fetch("/orion-hub/api/dashboard/current?project=" + encodeURIComponent(project), {
+            credentials: "same-origin",
+            cache: "no-store"
+          });
+          const body = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(body.message || ("HTTP " + response.status));
+          const snapshot = body;
+          special.replaceChildren(back());
+          document.title = snapshot.project.name + " · Orion Hub";
+
+          const hero = card("Current " + ((snapshot.project.terminology && snapshot.project.terminology.milestone) || "Milestone"), snapshot.milestone.name, true);
+          const heroRow = el("div", "dash-row");
+          const left = el("div");
+          left.append(el("p", "dash-muted", snapshot.project.name));
+          heroRow.append(left, el("span", "dash-badge", snapshot.milestone.state || ""));
+          hero.append(heroRow);
+          const done = el("div", "dash-field");
+          done.append(el("b", "", "Definition of done"), el("span", "", snapshot.milestone.definitionOfDone || "Not recorded."));
+          hero.append(done);
+          special.append(hero);
+
+          const topGrid = el("div", "dash-grid two");
+          const current = card("Current " + ((snapshot.project.terminology && snapshot.project.terminology.workUnit) || "Work Unit"), snapshot.currentWorkUnit.name);
+          current.append(el("p", "dash-muted", snapshot.currentWorkUnit.plainEnglishGoal || ""));
+          const fields = el("div", "dash-fields");
+          [
+            ["Current gate", snapshot.currentWorkUnit.currentGate || "None"],
+            ["Next action", snapshot.currentWorkUnit.nextAction || "None"],
+            ["Blockers", snapshot.currentWorkUnit.blockers && snapshot.currentWorkUnit.blockers.length ? snapshot.currentWorkUnit.blockers.join(" · ") : "None"],
+            ["Dependencies", snapshot.currentWorkUnit.dependencies && snapshot.currentWorkUnit.dependencies.length ? snapshot.currentWorkUnit.dependencies.join(" · ") : "None"]
+          ].forEach(([label, value]) => {
+            const d = el("div", "dash-field");
+            d.append(el("b", "", label), el("span", "", value));
+            fields.append(d);
+          });
+          current.append(fields);
+
+          const remaining = card("Known work", "Remaining Until Benchmark");
+          addList(remaining, snapshot.remainingWorkUnits, "No remaining work recorded.");
+          topGrid.append(current, remaining);
+          special.append(topGrid);
+
+          const mid = el("div", "dash-grid two");
+          const decisions = card("Owner input", "Open Decisions");
+          addList(decisions, snapshot.openDecisions, "No open owner decisions.");
+          const blockers = card("Only genuine blockers", "Blockers");
+          addList(blockers, snapshot.blockers, "No genuine blockers.");
+          mid.append(decisions, blockers);
+          special.append(mid);
+
+          const lower = el("div", "dash-grid two");
+          const completed = card("Latest movement", "Recently Completed");
+          addList(completed, snapshot.recentlyCompleted, "Nothing recently completed.");
+          const forecast = card("Trajectory", "Hours & Forecast");
+          const unknown = !(snapshot.hours && snapshot.hours.projectedMilestoneTotal && typeof snapshot.hours.projectedMilestoneTotal.best === "number");
+          forecast.append(el("p", "dash-muted", unknown ? "Hour estimates have not been established for this project snapshot." : ("Projected milestone total: " + snapshot.hours.projectedMilestoneTotal.best + " h")));
+          lower.append(completed, forecast);
+          special.append(lower);
+
+          const details = document.createElement("details");
+          details.className = "dash-card";
+          const summary = document.createElement("summary");
+          summary.textContent = "Deferred / Evidence";
+          details.append(summary);
+          const dbody = el("div");
+          addList(dbody, snapshot.deferred, "Nothing deferred.");
+          addList(dbody, snapshot.evidenceBaseline, "No evidence baseline recorded.");
+          details.append(dbody);
+          special.append(details);
+        } catch (err) {
+          loading.replaceChildren(el("p", "dash-label", "Dashboard unavailable"), el("h2", "", "Snapshot could not be loaded"), el("p", "dash-muted view-error", err && err.message ? err.message : String(err)));
+        }
+      };
+
+      if (view === "import") renderImport();
+      else if (view === "dashboard") renderDashboard();
+      else {
+        special.append(back(), el("p", "view-error", "Unknown Orion Hub view."));
+      }
+    })();
+  </script>
+
 </body>
 </html>
