@@ -186,7 +186,13 @@ function renderTempo(snapshot) {
   }
 
   p.append(bar);
-  p.append(node("p", "item-note", `~${hoursText(snapshot.tempo.totalHoursApprox)} represented in this snapshot window.`));
+  p.append(node(
+    "p",
+    "item-note",
+    typeof snapshot.tempo.totalHoursApprox === "number"
+      ? `~${hoursText(snapshot.tempo.totalHoursApprox)} represented in this snapshot window.`
+      : "Work-mix hours have not been estimated for this snapshot.",
+  ));
   return p;
 }
 
